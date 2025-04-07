@@ -96,3 +96,8 @@ self.addEventListener('activate', (event) => {
     })
   );
 });
+
+self.addEventListener('appinstalled', () => {
+    console.log('PWA was installed');
+    // Posibilidad de enviar analytics o realizar otras acciones
+});
