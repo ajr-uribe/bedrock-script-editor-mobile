@@ -2,14 +2,11 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <head>
-        
     <meta property="og:title" content="MCBE Script Editor">
-    <meta property="og:description" content="Welcome to the MCBE Scripts Editor Here you can code with auto-completions for Minecraft bedrock APIs">
+    <meta property="og:description" content="Editor de scripts para Minecraft Bedrock con autocompletado para las APIs">
     <meta property="og:image" content="https://res.cloudinary.com/dchi3dtvc/image/upload/favicon_xngegt.png">
     <meta property="og:url" content="https://ajr-uribe-editor.vercel.app?v2"> 
     <meta property="og:type" content="website"> 
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="manifest" href="/manifest.json">
     <link rel="website icon" href="./icons/favicon.png">
@@ -32,21 +29,23 @@
             touch-action: manipulation;
             -webkit-text-size-adjust: 100%;
             text-size-adjust: 100%;
+            overflow: hidden;
         }
-        h1{
-          font-size: 30px;
+        h1 {
+            font-size: 30px;
         }
         #app {
             display: flex;
             flex-direction: column;
             height: 100vh;
             width: 100vw;
-            overflow: hidden;
         }
         #header {
             padding: 15px;
             background: #252526;
             border-bottom: 1px solid #333;
+            position: relative;
+            z-index: 2;
         }
         #toolbar {
             display: flex;
@@ -68,6 +67,7 @@
         #editor-container {
             flex: 1;
             position: relative;
+            min-height: 300px;
         }
         #monaco-editor {
             position: absolute;
@@ -75,7 +75,7 @@
             right: 0;
             bottom: 0;
             left: 0;
-            touch-action: pan-y;
+            overflow: hidden;
         }
         .status-bar {
             padding: 5px 15px;
@@ -94,39 +94,35 @@
             z-index: 1000;
             display: none;
         }
-        #icon{
-          position: fixed;
-          max-block-size: 80px;
-          right: 20px;
-          top: 10px;
+        #icon {
+            max-height: 40px;
+            vertical-align: middle;
+            margin-right: 10px;
         }
-        @media (min-width: 1200px){
-          #header{
-            height: 250px;
-          }
-          h1 {
-            font-size: 80px;
-            margin-bottom: 50px;
-          }
-          #module-select, #run-btn, #copy-btn {
-            font-size: 40px;
-          }
-           #icon {
-             position: absolute;
-             overlay: hidden;
-             margin: auto;
-          max-block-size: 200px;
+        @media (min-width: 1200px) {
+            #header {
+                height: auto;
+                padding: 20px;
+            }
+            h1 {
+                font-size: 2.5rem;
+                margin-bottom: 20px;
+            }
+            #module-select, #run-btn, #copy-btn {
+                font-size: 1rem;
+                padding: 8px 15px;
+            }
+            #icon {
+                max-height: 60px;
+            }
         }
-        }
-        @media(max-width: 660px){
-          #icon{
-            max-block-size: 50px;
-          }
-        }
-        @viewport {
-            width: device-width;
-            zoom: 1.0;
-            user-zoom: fixed;
+        @media (max-width: 660px) {
+            #icon {
+                max-height: 30px;
+            }
+            h1 {
+                font-size: 1.2rem;
+            }
         }
     </style>
 </head>
@@ -148,290 +144,303 @@
             <div id="monaco-editor"></div>
         </div>
         <div class="status-bar" id="status-bar">
-            Ready...
+            Loading editor...
         </div>
     </div>
 
-    <!-- Toast notification -->
     <div class="toast" id="toast"></div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.40.0/min/vs/loader.min.js"></script>
     <script>
-    // Configuración global de Monaco
-    require.config({ 
-        paths: { 
-            'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.40.0/min/vs'
-        },
-        waitSeconds: 30
-    });
+        // Configuración global de Monaco
+        require.config({ 
+            paths: { 
+                'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.40.0/min/vs'
+            },
+            waitSeconds: 30
+        });
 
-    window.MonacoEnvironment = {
-        getWorkerUrl: function(workerId, label) {
-            return `data:text/javascript;charset=utf-8,${encodeURIComponent(`
-                self.MonacoEnvironment = {
-                    baseUrl: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.40.0/min/'
-                };
-                importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.40.0/min/vs/base/worker/workerMain.js');
-            `)}`;
-        }
-    };
+        window.MonacoEnvironment = {
+            getWorkerUrl: function(workerId, label) {
+                return `data:text/javascript;charset=utf-8,${encodeURIComponent(`
+                    self.MonacoEnvironment = {
+                        baseUrl: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.40.0/min/'
+                    };
+                    importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.40.0/min/vs/base/worker/workerMain.js');
+                `)}`;
+            }
+        };
 
-    // Variables globales
-    let deferredPrompt;
-    let editor;
-    let isInstalled = false;
+        // Variables globales
+        let deferredPrompt;
+        let editor;
+        let isInstalled = false;
 
-    // Ejemplos de código para cada módulo
-    const EXAMPLES = {
-        server: `// @minecraft/server example
+        // Ejemplos de código para cada módulo
+        const EXAMPLES = {
+            server: `// @minecraft/server example
 import { world, system } from '@minecraft/server';
 
 world.afterEvents.playerSpawn.subscribe((event) => {
     const player = event.player;
-    player.sendMessage("Welcome to the world!");
+    player.sendMessage("¡Bienvenido al mundo!");
     
     system.runInterval(() => {
-        player.onScreenDisplay.setTitle("Hello Minecraft!");
+        player.onScreenDisplay.setTitle("¡Hola Minecraft!");
     }, 20);
 });`,
 
-        'server-ui': `// @minecraft/server-ui example
+            'server-ui': `// @minecraft/server-ui example
 import { ActionForm } from '@minecraft/server-ui';
 
 async function showForm(player) {
     const form = new ActionForm()
-        .title("Action menu")
-        .body("Select an option:")
-        .button("Option 1")
-        .button("Option 2");
+        .title("Menú de Acción")
+        .body("Selecciona una opción:")
+        .button("Opción 1")
+        .button("Opción 2");
     
     const response = await form.show(player);
     if (response.selection === 0) {
-        player.sendMessage("You selected button 1");
+        player.sendMessage("Seleccionaste el botón 1");
     }
 }`,
 
-        'server-gametest': `// @minecraft/server-gametest example
+            'server-gametest': `// @minecraft/server-gametest example
 import * as gametest from '@minecraft/server-gametest';
 
 function simpleTest(test) {
     const player = test.spawnSimulatedPlayer({ x: 0, y: 1, z: 0 });
-    test.assert(player.isValid(), "Player should be valid");
+    test.assert(player.isValid(), "El jugador debería ser válido");
     
     test.succeedWhen(() => {
         const block = test.getBlock({ x: 0, y: 0, z: 0 });
-        test.assert(block.typeId === "minecraft:stone", "Should be stone on (0,0,0)");
+        test.assert(block.typeId === "minecraft:stone", "Debería haber piedra en (0,0,0)");
     });
 }
 
 gametest.register("TestSuite", "simpleTest", simpleTest)
     .maxTicks(100)
     .structureName("test:structure");`
-    };
+        };
 
-    // Función para cargar los tipos de definición
-    async function loadTypeDefinitions() {
-        try {
-            const [serverTypes, serverUiTypes, gameTestTypes] = await Promise.all([
-                fetch('/types/@minecraft/server/index.d.ts').then(r => r.text()),
-                fetch('/types/@minecraft/server-ui/index.d.ts').then(r => r.text()),
-                fetch('/types/@minecraft/server-gametest/index.d.ts').then(r => r.text())
-            ]);
+        // Función para cargar los tipos de definición
+        async function loadTypeDefinitions() {
+            try {
+                const [serverTypes, serverUiTypes, gameTestTypes] = await Promise.all([
+                    fetch('/types/@minecraft/server/index.d.ts').then(r => r.text()),
+                    fetch('/types/@minecraft/server-ui/index.d.ts').then(r => r.text()),
+                    fetch('/types/@minecraft/server-gametest/index.d.ts').then(r => r.text())
+                ]);
 
-            // Configurar los tipos en Monaco
-            monaco.languages.typescript.typescriptDefaults.addExtraLib(
-                serverTypes,
-                'file:///node_modules/@minecraft/server/index.d.ts'
-            );
-            
-            monaco.languages.typescript.typescriptDefaults.addExtraLib(
-                serverUiTypes,
-                'file:///node_modules/@minecraft/server-ui/index.d.ts'
-            );
-            
-            monaco.languages.typescript.typescriptDefaults.addExtraLib(
-                gameTestTypes,
-                'file:///node_modules/@minecraft/server-gametest/index.d.ts'
-            );
+                // Configurar los tipos en Monaco
+                monaco.languages.typescript.typescriptDefaults.addExtraLib(
+                    serverTypes,
+                    'file:///node_modules/@minecraft/server/index.d.ts'
+                );
+                
+                monaco.languages.typescript.typescriptDefaults.addExtraLib(
+                    serverUiTypes,
+                    'file:///node_modules/@minecraft/server-ui/index.d.ts'
+                );
+                
+                monaco.languages.typescript.typescriptDefaults.addExtraLib(
+                    gameTestTypes,
+                    'file:///node_modules/@minecraft/server-gametest/index.d.ts'
+                );
 
-            // Configuración del compilador TypeScript
-            monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
-                target: monaco.languages.typescript.ScriptTarget.ES2020,
-                allowNonTsExtensions: true,
-                moduleResolution: monaco.languages.typescript.ModuleResolutionKind.NodeJs,
-                module: monaco.languages.typescript.ModuleKind.CommonJS,
-                typeRoots: ["file:///types"],
-                baseUrl: "file:///",
-                paths: {
-                    "@minecraft/server": ["node_modules/@minecraft/server"],
-                    "@minecraft/server-ui": ["node_modules/@minecraft/server-ui"],
-                    "@minecraft/server-gametest": ["node_modules/@minecraft/server-gametest"]
-                },
-                strict: true
-            });
+                // Configuración del compilador TypeScript
+                monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
+                    target: monaco.languages.typescript.ScriptTarget.ES2020,
+                    allowNonTsExtensions: true,
+                    moduleResolution: monaco.languages.typescript.ModuleResolutionKind.NodeJs,
+                    module: monaco.languages.typescript.ModuleKind.CommonJS,
+                    typeRoots: ["file:///types"],
+                    baseUrl: "file:///",
+                    paths: {
+                        "@minecraft/server": ["node_modules/@minecraft/server"],
+                        "@minecraft/server-ui": ["node_modules/@minecraft/server-ui"],
+                        "@minecraft/server-gametest": ["node_modules/@minecraft/server-gametest"]
+                    },
+                    strict: true
+                });
 
-            return true;
-        } catch (error) {
-            console.error("Error on loading types:", error);
-            showToast('Error loading API definitions', true);
-            return false;
+                return true;
+            } catch (error) {
+                console.error("Error cargando tipos:", error);
+                showToast('Error loading API definitions', true);
+                return false;
+            }
         }
-    }
 
-    // Función para mostrar notificación toast
-    function showToast(message, isError = false) {
-        const toast = document.getElementById('toast');
-        toast.textContent = message;
-        toast.style.backgroundColor = isError ? '#d32f2f' : '#007acc';
-        toast.style.display = 'block';
+        // Función para mostrar notificación toast
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.style.backgroundColor = isError ? '#d32f2f' : '#007acc';
+            toast.style.display = 'block';
 
-        setTimeout(() => {
-            toast.style.display = 'none';
-        }, 3000);
-    }
-
-    // Función para copiar el contenido del editor
-    async function copyScript() {
-        try {
-            const text = editor.getValue();
-            await navigator.clipboard.writeText(text);
-            showToast('Code copied to clipboard!');
-        } catch (err) {
-            console.error('Error when copying:', err);
-            showToast('Error copying code', true);
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3000);
         }
-    }
 
-    // Función para actualizar la barra de estado
-    function updateStatusBar() {
-        if (!editor) return;
-        const statusBar = document.getElementById('status-bar');
-        const lineCount = editor.getModel().getLineCount();
-        const position = editor.getPosition();
-        statusBar.textContent = `Line ${position.lineNumber}, Col ${position.column} | ${lineCount} lines | ${isInstalled ? 'PWA' : 'Web'}`;
-    }
+        // Función para copiar el contenido del editor
+        async function copyScript() {
+            try {
+                const text = editor.getValue();
+                await navigator.clipboard.writeText(text);
+                showToast('Code copied to clipboard!');
+            } catch (err) {
+                console.error('Error al copiar:', err);
+                showToast('Error copying code', true);
+            }
+        }
 
-    // Función para ajustar el tamaño de fuente según el dispositivo
-    function adjustEditorFontSize() {
-        if (!editor) return;
-        const isLargeScreen = window.innerWidth >= 700;
-        const fontSize = isLargeScreen ? 16 : 14;
-        const lineHeight = isLargeScreen ? 24 : 20;
-        
-        editor.updateOptions({
-            fontSize: fontSize,
-            lineHeight: lineHeight
-        });
-    }
+        // Función para actualizar la barra de estado
+        function updateStatusBar() {
+            if (!editor) return;
+            const statusBar = document.getElementById('status-bar');
+            const lineCount = editor.getModel().getLineCount();
+            const position = editor.getPosition();
+            statusBar.textContent = `Line ${position.lineNumber}, Col ${position.column} | ${lineCount} lines | ${isInstalled ? 'PWA' : 'Web'}`;
+        }
 
-    // Inicializar la aplicación
-    async function initializeApp() {
-        try {
-            // Registrar Service Worker para PWA
-            if ('serviceWorker' in navigator) {
-                try {
-                    await navigator.serviceWorker.register('./sw.js');
-                    console.log('Service Worker registered');
-                } catch (swError) {
-                    console.log('Service Worker registration failed:', swError);
-                }
+        // Función para crear/recrear el editor
+        function createEditor() {
+            // Limpiar contenedor si ya existe un editor
+            if (editor) {
+                editor.dispose();
+                document.getElementById('monaco-editor').innerHTML = '';
             }
 
-            // Inicializar Monaco Editor
-            await new Promise((resolve) => {
-                require(['vs/editor/editor.main'], resolve);
-            });
-
-            // Crear editor inicialmente en JavaScript
+            // Crear nuevo editor
             editor = monaco.editor.create(document.getElementById('monaco-editor'), {
                 value: EXAMPLES.server,
                 language: 'javascript',
                 theme: 'vs-dark',
                 automaticLayout: true,
-                minimap: { enabled: true },
+                readOnly: false,
                 fontSize: 16,
                 lineHeight: 24,
-                mouseWheelZoom: false,
+                minimap: { enabled: true },
                 scrollBeyondLastLine: false,
                 roundedSelection: true,
-                scrollbar: {
-                    verticalScrollbarSize: 8,
-                    horizontalScrollbarSize: 8
-                }
+                mouseWheelZoom: false
             });
 
-            // Cargar tipos y cambiar a TypeScript
-            const typesLoaded = await loadTypeDefinitions();
-            if (typesLoaded) {
-                monaco.editor.setModelLanguage(editor.getModel(), 'typescript');
-                showToast('API autocomplete loaded!');
-            }
+            // Forzar foco y asegurar que no esté en modo solo lectura
+            setTimeout(() => {
+                editor.focus();
+                editor.updateOptions({ readOnly: false });
+                console.log("Editor creado. Modo solo lectura:", editor.getOption(monaco.editor.EditorOption.readOnly));
+            }, 100);
 
-            // Configurar eventos del editor
-            editor.onDidChangeModelContent(updateStatusBar);
-            editor.onDidChangeCursorPosition(updateStatusBar);
-
-            // Configurar selector de módulos
-            document.getElementById('module-select').addEventListener('change', (e) => {
-                const module = e.target.value;
-                editor.setValue(EXAMPLES[module]);
-            });
-
-            // Configurar botones
-            document.getElementById('copy-btn').addEventListener('click', copyScript);
-            document.getElementById('run-btn').addEventListener('click', () => {
-                showToast('Execution feature coming soon!');
-            });
-
-            // Ajustes iniciales
-            adjustEditorFontSize();
-            window.addEventListener('resize', adjustEditorFontSize);
-            updateStatusBar();
-
-            // Bloqueo de zoom no deseado
-            document.addEventListener('wheel', e => {
-                if (e.ctrlKey) e.preventDefault();
-            }, { passive: false });
-
-        } catch (error) {
-            console.error("Error on app initialize:", error);
-            showToast('Failed to initialize editor', true);
+            return editor;
         }
-    }
 
-    // Eventos PWA
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
-        isInstalled = false;
-        
-        // Mostrar sugerencia de instalación después de 30s de uso
-        setTimeout(() => {
-            if (!isInstalled && deferredPrompt) {
-                const install = confirm('Install MCBE Script Editor as an app for better experience?');
-                if (install) {
-                    deferredPrompt.prompt();
-                    deferredPrompt.userChoice.then((choice) => {
-                        if (choice.outcome === 'accepted') {
-                            isInstalled = true;
-                        }
-                        deferredPrompt = null;
-                    });
+        // Inicializar la aplicación
+        async function initializeApp() {
+            try {
+                // Registrar Service Worker para PWA
+                if ('serviceWorker' in navigator) {
+                    try {
+                        await navigator.serviceWorker.register('/sw.js');
+                        console.log('Service Worker registrado');
+                    } catch (swError) {
+                        console.log('Service Worker registration failed:', swError);
+                    }
                 }
+
+                // Inicializar Monaco Editor
+                await new Promise((resolve) => {
+                    require(['vs/editor/editor.main'], resolve);
+                });
+
+                // Crear editor inicial
+                createEditor();
+
+                // Cargar tipos y cambiar a TypeScript
+                const typesLoaded = await loadTypeDefinitions();
+                if (typesLoaded) {
+                    monaco.editor.setModelLanguage(editor.getModel(), 'typescript');
+                    showToast('API autocomplete loaded!');
+                }
+
+                // Configurar eventos del editor
+                editor.onDidChangeModelContent(updateStatusBar);
+                editor.onDidChangeCursorPosition(updateStatusBar);
+
+                // Configurar selector de módulos
+                document.getElementById('module-select').addEventListener('change', (e) => {
+                    const module = e.target.value;
+                    editor.setValue(EXAMPLES[module]);
+                    editor.focus();
+                });
+
+                // Configurar botones
+                document.getElementById('copy-btn').addEventListener('click', copyScript);
+                document.getElementById('run-btn').addEventListener('click', () => {
+                    showToast('Execution feature coming soon!');
+                });
+
+                // Ajustes iniciales
+                updateStatusBar();
+
+                // Bloqueo de zoom no deseado
+                document.addEventListener('wheel', e => {
+                    if (e.ctrlKey) e.preventDefault();
+                }, { passive: false });
+
+                // Verificar estado del editor después de 1 segundo
+                setTimeout(() => {
+                    console.log("Verificación final del editor:");
+                    console.log("- Modo solo lectura:", editor.getOption(monaco.editor.EditorOption.readOnly));
+                    console.log("- Tiene foco:", editor.hasTextFocus());
+                    console.log("- Es visible:", editor.getLayoutInfo().width > 0);
+                }, 1000);
+
+            } catch (error) {
+                console.error("Error inicializando la aplicación:", error);
+                showToast('Failed to initialize editor', true);
             }
-        }, 30000);
-    });
+        }
 
-    window.addEventListener('appinstalled', () => {
-        isInstalled = true;
-        showToast('App installed successfully!');
-    });
+        // Eventos PWA
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            isInstalled = false;
+            
+            // Mostrar sugerencia de instalación después de 30s de uso
+            setTimeout(() => {
+                if (!isInstalled && deferredPrompt) {
+                    const install = confirm('Install MCBE Script Editor as an app for better experience?');
+                    if (install) {
+                        deferredPrompt.prompt();
+                        deferredPrompt.userChoice.then((choice) => {
+                            if (choice.outcome === 'accepted') {
+                                isInstalled = true;
+                            }
+                            deferredPrompt = null;
+                        });
+                    }
+                }
+            }, 30000);
+        });
 
-    // Iniciar la aplicación cuando el DOM esté listo
-    if (document.readyState === 'complete') {
-        initializeApp();
-    } else {
-        window.addEventListener('DOMContentLoaded', initializeApp);
-    }
-</script>
+        window.addEventListener('appinstalled', () => {
+            isInstalled = true;
+            showToast('App installed successfully!');
+            updateStatusBar();
+        });
+
+        // Iniciar la aplicación cuando el DOM esté listo
+        if (document.readyState === 'complete') {
+            initializeApp();
+        } else {
+            window.addEventListener('DOMContentLoaded', initializeApp);
+        }
+    </script>
 </body>
 </html>
