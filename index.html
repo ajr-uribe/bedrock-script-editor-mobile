@@ -99,6 +99,29 @@
             vertical-align: middle;
             margin-right: 10px;
         }
+#install-btn {
+    background: #4CAF50;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: none; /* Oculto por defecto */
+}
+
+#install-btn:hover {
+    background: #45a049;
+}
+
+#install-btn.installing {
+    background: #FF9800;
+}
+
+#install-btn.installed {
+    background: #9E9E9E;
+    cursor: default;
+}
         @media (min-width: 1200px) {
             #header {
                 height: auto;
@@ -131,14 +154,15 @@
         <div id="header">
             <h1><img src="./icons/favicon.png" id="icon">Bedrock Scripts Editor</h1>
             <div id="toolbar">
-                <select id="module-select">
-                    <option value="server">@minecraft/server</option>
-                    <option value="server-ui">@minecraft/server-ui</option>
-                    <option value="server-gametest">@minecraft/server-gametest</option>
-                </select>
-                <button id="run-btn">Execute (Soon)</button>
-                <button id="copy-btn">Copy</button>
-            </div>
+    <select id="module-select">...</select>
+    <button id="run-btn">Execute (Soon)</button>
+    <button id="copy-btn">Copy</button>
+   
+    <button id="install-btn" style="display: none; background: #4CAF50;">
+        <span id="install-text">Install App</span>
+        <span id="install-spinner" style="display: none;"> ⏳</span>
+    </button>
+</div>
         </div>
         <div id="editor-container">
             <div id="monaco-editor"></div>
