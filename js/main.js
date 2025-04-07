@@ -1,3 +1,46 @@
+// Verificar estado de conexión
+function updateOnlineStatus() {
+    const statusBar = document.getElementById('status-bar');
+    if (navigator.onLine) {
+        statusBar.style.backgroundColor = '#007acc';
+    } else {
+        statusBar.style.backgroundColor = '#d32f2f';
+        statusBar.textContent = 'Offline Mode - Using cached resources';
+    }
+}
+
+window.addEventListener('online', updateOnlineStatus);
+window.addEventListener('offline', updateOnlineStatus);
+updateOnlineStatus();
+
+// Configuración offline de Monaco
+window.MonacoEnvironment = {
+    getWorkerUrl: function(workerId, label) {
+        // Usar CDN cuando esté online, local cuando esté offline
+        if (navigator.onLine) {
+            return `https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.40.0/min/vs/base/worker/workerMain.js`;
+        } else {
+            // Cargar desde cache
+            return URL.createObjectURL(new Blob([`
+                importScripts('/vs/base/worker/workerMain.js');
+            `], { type: 'application/javascript' }));
+        }
+    },
+    getWorker: function(workerId, label) {
+        // Cargar workers específicos para TypeScript
+        if (label === 'typescript' || label === 'javascript') {
+            return new Worker(
+                navigator.onLine 
+                    ? 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.40.0/min/vs/language/typescript/tsWorker.js'
+                    : URL.createObjectURL(new Blob([`
+                        importScripts('/vs/language/typescript/tsWorker.js');
+                    `], { type: 'application/javascript' }))
+            );
+        }
+        return null;
+    }
+};
+
 // Configuración global de Monaco
 require.config({
     paths: { 
