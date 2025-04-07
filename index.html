@@ -2,24 +2,38 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editor Minecraft Bedrock Script</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="website icon" href="/icons/favicon.svg">
+    <meta name="theme-color" content="#007acc">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>MCBE Scripts Editor</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            transition: all 300ms ease;
         }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: #1e1e1e;
             color: #d4d4d4;
+            touch-action: manipulation;
+            -webkit-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+        }
+        h1{
+          font-size: 30px;
         }
         #app {
             display: flex;
             flex-direction: column;
             height: 100vh;
             width: 100vw;
+            overflow: hidden;
         }
         #header {
             padding: 15px;
@@ -38,6 +52,10 @@
             color: white;
             border: 1px solid #555;
             border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #444;
         }
         #editor-container {
             flex: 1;
@@ -49,36 +67,233 @@
             right: 0;
             bottom: 0;
             left: 0;
+            touch-action: pan-y;
         }
         .status-bar {
             padding: 5px 15px;
             background: #007acc;
             font-size: 12px;
         }
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 4px;
+            z-index: 1000;
+            display: none;
+        }
+        #icon{
+          position: fixed;
+          max-block-size: 80px;
+          right: 20px;
+          top: 10px;
+        }
+        @media (min-width: 1200px){
+          #header{
+            height: 250px;
+          }
+          h1 {
+            font-size: 80px;
+            margin-bottom: 50px;
+          }
+          #module-select, #run-btn, #copy-btn {
+            font-size: 40px;
+          }
+           #icon {
+             position: absolute;
+             overlay: hidden;
+             margin: auto;
+          max-block-size: 200px;
+        }
+        }
+        @media(max-width: 660px){
+          #icon{
+            max-block-size: 50px;
+          }
+        }
+        @viewport {
+            width: device-width;
+            zoom: 1.0;
+            user-zoom: fixed;
+        }
     </style>
 </head>
 <body>
     <div id="app">
         <div id="header">
-            <h1>Editor de Scripts Minecraft Bedrock</h1>
+            <h1><img src="/icons/favicon.svg" id="icon">Bedrock Scripts Editor</h1>
             <div id="toolbar">
                 <select id="module-select">
                     <option value="server">@minecraft/server</option>
                     <option value="server-ui">@minecraft/server-ui</option>
                     <option value="server-gametest">@minecraft/server-gametest</option>
                 </select>
-                <button id="run-btn">Ejecutar (Simulado)</button>
+                <button id="run-btn">Execute (Soon)</button>
+                <button id="copy-btn">Copy</button>
             </div>
         </div>
         <div id="editor-container">
             <div id="monaco-editor"></div>
         </div>
         <div class="status-bar" id="status-bar">
-            Preparado...
+            Ready...
         </div>
     </div>
 
+    <!-- Toast notification -->
+    <div class="toast" id="toast"></div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.40.0/min/vs/loader.min.js"></script>
-    <script src="js/main.js"></script>
+    <script>
+        // Detectar si es posible instalar la PWA
+        let deferredPrompt;
+        let editor;
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            
+            const installConfirmed = confirm('¿Want to install MCBE Script Editor?');
+            
+            if (installConfirmed) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('Usuario aceptó la instalación');
+                    } else {
+                        console.log('Usuario rechazó la instalación');
+                    }
+                    deferredPrompt = null;
+                });
+            }
+        });
+
+        window.addEventListener('appinstalled', () => {
+            showToast('¡Aplicación instalada correctamente!');
+        });
+
+        // Inicializar el editor Monaco con protección anti-zoom
+        require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.40.0/min/vs' }});
+        require(['vs/editor/editor.main'], function() {
+            editor = monaco.editor.create(document.getElementById('monaco-editor'), {
+                value: '//Start working here\n',
+                language: 'javascript',
+                theme: 'vs-dark',
+                automaticLayout: true,
+                minimap: { enabled: true },
+                fontSize: 16,
+                lineHeight: 24,
+                mouseWheelZoom: false,
+                fastScrollSensitivity: 1,
+                scrollBeyondLastLine: false
+            });
+
+            // Bloqueo físico del zoom
+            const editorContainer = editor.getContainerDomNode();
+            editorContainer.style.touchAction = 'pan-y';
+            editorContainer.addEventListener('gesturestart', e => e.preventDefault());
+            
+            // Intercepta eventos de teclado
+            editor.onKeyDown(e => {
+                if (e.ctrlKey && (e.keyCode === 187 || e.keyCode === 189)) {
+                    e.preventDefault(); // Bloquea Ctrl+/- para zoom
+                }
+            });
+
+            // Función para ajustar el tamaño de fuente
+            function adjustEditorFontSize() {
+                if (!editor) return;
+                
+                const isLargeScreen = window.innerWidth >= 700;
+                const fontSize = isLargeScreen ? 60 : 16;
+                const lineHeight = isLargeScreen ? 90 : 24;
+                
+                editor.updateOptions({
+                    fontSize: fontSize,
+                    lineHeight: lineHeight
+                });
+            }
+
+            // Aplicar ajustes iniciales
+            adjustEditorFontSize();
+            window.addEventListener('resize', adjustEditorFontSize);
+            
+            editor.onDidChangeModelContent(function() {
+                updateStatusBar();
+            });
+        });
+
+        // Nuclear Option: Bloquea cualquier zoom potencial
+        document.addEventListener('wheel', e => {
+            if (e.ctrlKey) e.preventDefault();
+        }, { passive: false });
+
+        // Protección adicional para teclados móviles
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', () => {
+                if (visualViewport.scale !== 1) {
+                    document.documentElement.style.transform = `scale(1)`;
+                }
+            });
+        }
+
+        // Función para copiar el contenido
+        async function copyScript() {
+            try {
+                const text = editor.getValue();
+                await navigator.clipboard.writeText(text);
+                showToast('Copied');
+            } catch (err) {
+                console.error('Error:', err);
+                showToast('Error on copying', true);
+                
+                // Fallback para navegadores antiguos
+                try {
+                    const textarea = document.createElement('textarea');
+                    textarea.value = editor.getValue();
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textarea);
+                    showToast('Copied');
+                } catch (err2) {
+                    console.error('Error:', err2);
+                    showToast('Error on copy', true);
+                }
+            }
+        }
+
+        // Función para mostrar notificación toast
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.style.backgroundColor = isError ? '#d32f2f' : 'rgba(0, 0, 0, 0.7)';
+            toast.style.display = 'block';
+            
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3000);
+        }
+
+        // Función para actualizar la barra de estado
+        function updateStatusBar() {
+            if (!editor) return;
+            
+            const statusBar = document.getElementById('status-bar');
+            const lineCount = editor.getModel().getLineCount();
+            const position = editor.getPosition();
+            statusBar.textContent = `Line ${position.lineNumber}, Column ${position.column} | ${lineCount} total lines`;
+        }
+
+        // Asignar eventos
+        document.getElementById('copy-btn').addEventListener('click', copyScript);
+        
+        // Inicializar barra de estado
+        updateStatusBar();
+    </script>
 </body>
 </html>
