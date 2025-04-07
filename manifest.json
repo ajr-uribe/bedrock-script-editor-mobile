@@ -4,6 +4,8 @@
   "description": "Editor de scripts para Minecraft Bedrock con soporte offline",
   "start_url": "/",
   "display": "standalone",
+  "orientation": "portrait",
+  "prefer_related_aplications": false,
   "background_color": "#1e1e1e",
   "theme_color": "#007acc",
   "icons": [
