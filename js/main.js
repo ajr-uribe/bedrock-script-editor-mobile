@@ -1,54 +1,11 @@
-// Verificar estado de conexión
-function updateOnlineStatus() {
-    const statusBar = document.getElementById('status-bar');
-    if (navigator.onLine) {
-        statusBar.style.backgroundColor = '#007acc';
-    } else {
-        statusBar.style.backgroundColor = '#d32f2f';
-        statusBar.textContent = 'Offline Mode - Using cached resources';
-    }
-}
-
-window.addEventListener('online', updateOnlineStatus);
-window.addEventListener('offline', updateOnlineStatus);
-updateOnlineStatus();
-
-// Configuración offline de Monaco
-window.MonacoEnvironment = {
-    getWorkerUrl: function(workerId, label) {
-        // Usar CDN cuando esté online, local cuando esté offline
-        if (navigator.onLine) {
-            return `https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.40.0/min/vs/base/worker/workerMain.js`;
-        } else {
-            // Cargar desde cache
-            return URL.createObjectURL(new Blob([`
-                importScripts('/vs/base/worker/workerMain.js');
-            `], { type: 'application/javascript' }));
-        }
-    },
-    getWorker: function(workerId, label) {
-        // Cargar workers específicos para TypeScript
-        if (label === 'typescript' || label === 'javascript') {
-            return new Worker(
-                navigator.onLine 
-                    ? 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.40.0/min/vs/language/typescript/tsWorker.js'
-                    : URL.createObjectURL(new Blob([`
-                        importScripts('/vs/language/typescript/tsWorker.js');
-                    `], { type: 'application/javascript' }))
-            );
-        }
-        return null;
-    }
-};
-
 // Configuración global de Monaco
-require.config({
+require.config({ 
     paths: { 
         'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.40.0/min/vs'
-    }
+    },
+    waitSeconds: 30
 });
 
-// Entorno para los workers
 window.MonacoEnvironment = {
     getWorkerUrl: function(workerId, label) {
         return `data:text/javascript;charset=utf-8,${encodeURIComponent(`
@@ -60,9 +17,19 @@ window.MonacoEnvironment = {
     }
 };
 
+// Variables globales
+let deferredPrompt;
+let editor;
+let isInstalled = false;
+
+// Elementos UI
+const installBtn = document.getElementById('install-btn');
+const installText = document.getElementById('install-text');
+const installSpinner = document.getElementById('install-spinner');
+
 // Ejemplos de código para cada módulo
 const EXAMPLES = {
-    server: `// Ejemplo @minecraft/server
+    server: `// @minecraft/server example
 import { world, system } from '@minecraft/server';
 
 world.afterEvents.playerSpawn.subscribe((event) => {
@@ -74,10 +41,10 @@ world.afterEvents.playerSpawn.subscribe((event) => {
     }, 20);
 });`,
 
-    'server-ui': `// Ejemplo @minecraft/server-ui
-import { ActionForm, MessageForm, ModalForm } from '@minecraft/server-ui';
+    'server-ui': `// @minecraft/server-ui example
+import { ActionForm } from '@minecraft/server-ui';
 
-async function showActionForm(player) {
+async function showForm(player) {
     const form = new ActionForm()
         .title("Menú de Acción")
         .body("Selecciona una opción:")
@@ -86,11 +53,11 @@ async function showActionForm(player) {
     
     const response = await form.show(player);
     if (response.selection === 0) {
-        player.sendMessage("Seleccionaste la opción 1");
+        player.sendMessage("Seleccionaste el botón 1");
     }
 }`,
 
-    'server-gametest': `// Ejemplo @minecraft/server-gametest
+    'server-gametest': `// @minecraft/server-gametest example
 import * as gametest from '@minecraft/server-gametest';
 
 function simpleTest(test) {
@@ -108,63 +75,13 @@ gametest.register("TestSuite", "simpleTest", simpleTest)
     .structureName("test:structure");`
 };
 
-// Inicialización principal
-require(['vs/editor/editor.main'], function() {
-    // Verificar que Monaco se cargó
-    if (typeof monaco === 'undefined') {
-        document.getElementById('status-bar').textContent = "Error: No se pudo cargar Monaco Editor";
-        return;
-    }
-
-    // Crear editor con configuración básica
-    const editor = monaco.editor.create(document.getElementById('monaco-editor'), {
-        value: EXAMPLES.server,
-        language: 'javascript',
-        theme: 'vs-dark',
-        automaticLayout: true,
-        minimap: { enabled: true },
-        fontSize: 14,
-        scrollBeyondLastLine: false,
-        renderWhitespace: 'selection',
-        roundedSelection: true,
-        autoIndent: 'full'
-    });
-
-    // Cargar tipos y configurar TypeScript
-    loadTypeDefinitions().then(() => {
-        monaco.editor.setModelLanguage(editor.getModel(), 'typescript');
-        document.getElementById('status-bar').textContent = "Tipos cargados correctamente";
-    }).catch(error => {
-        console.error("Error cargando tipos:", error);
-        document.getElementById('status-bar').textContent = "Advertencia: Tipos no cargados (ver consola)";
-    });
-
-    // Configurar selector de módulos
-    document.getElementById('module-select').addEventListener('change', (e) => {
-        const module = e.target.value;
-        editor.setValue(EXAMPLES[module]);
-    });
-
-    // Configurar botón de ejecución (simulado)
-    document.getElementById('run-btn').addEventListener('click', () => {
-        const code = editor.getValue();
-        document.getElementById('status-bar').textContent = "Ejecutando código (simulación)...";
-        console.log("Código a ejecutar:", code);
-        // Aquí iría la lógica real de ejecución
-        setTimeout(() => {
-            document.getElementById('status-bar').textContent = "Ejecución simulada completada (ver consola)";
-        }, 1000);
-    });
-});
-
 // Función para cargar los tipos de definición
 async function loadTypeDefinitions() {
     try {
-        // Cargar los tres archivos de tipos en paralelo
         const [serverTypes, serverUiTypes, gameTestTypes] = await Promise.all([
-            fetch('./types/@minecraft/server/index.d.ts').then(r => r.text()),
-            fetch('./types/@minecraft/server-ui/index.d.ts').then(r => r.text()),
-            fetch('./types/@minecraft/server-gametest/index.d.ts').then(r => r.text())
+            fetch('/types/@minecraft/server/index.d.ts').then(r => r.text()),
+            fetch('/types/@minecraft/server-ui/index.d.ts').then(r => r.text()),
+            fetch('/types/@minecraft/server-gametest/index.d.ts').then(r => r.text())
         ]);
 
         // Configurar los tipos en Monaco
@@ -195,12 +112,231 @@ async function loadTypeDefinitions() {
                 "@minecraft/server": ["node_modules/@minecraft/server"],
                 "@minecraft/server-ui": ["node_modules/@minecraft/server-ui"],
                 "@minecraft/server-gametest": ["node_modules/@minecraft/server-gametest"]
-            }
+            },
+            strict: true
         });
 
         return true;
     } catch (error) {
         console.error("Error cargando tipos:", error);
-        throw error;
+        showToast('Error loading API definitions', true);
+        return false;
     }
-          }
+}
+
+// Función para mostrar notificación toast
+function showToast(message, isError = false) {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.style.backgroundColor = isError ? '#d32f2f' : '#007acc';
+    toast.style.display = 'block';
+
+    setTimeout(() => {
+        toast.style.display = 'none';
+    }, 3000);
+}
+
+// Función para copiar el contenido del editor
+async function copyScript() {
+    try {
+        const text = editor.getValue();
+        await navigator.clipboard.writeText(text);
+        showToast('Code copied to clipboard!');
+    } catch (err) {
+        console.error('Error al copiar:', err);
+        showToast('Error copying code', true);
+    }
+}
+
+// Función para actualizar la barra de estado
+function updateStatusBar() {
+    if (!editor) return;
+    const statusBar = document.getElementById('status-bar');
+    const lineCount = editor.getModel().getLineCount();
+    const position = editor.getPosition();
+    statusBar.textContent = `Line ${position.lineNumber}, Col ${position.column} | ${lineCount} lines | ${isInstalled ? 'PWA' : 'Web'}`;
+}
+
+// Función para crear/recrear el editor
+function createEditor() {
+    // Limpiar contenedor si ya existe un editor
+    if (editor) {
+        editor.dispose();
+        document.getElementById('monaco-editor').innerHTML = '';
+    }
+
+    // Crear nuevo editor
+    editor = monaco.editor.create(document.getElementById('monaco-editor'), {
+        value: EXAMPLES.server,
+        language: 'javascript',
+        theme: 'vs-dark',
+        automaticLayout: true,
+        readOnly: false,
+        fontSize: 16,
+        lineHeight: 24,
+        minimap: { enabled: true },
+        scrollBeyondLastLine: false,
+        roundedSelection: true,
+        mouseWheelZoom: false
+    });
+
+    // Forzar foco y asegurar que no esté en modo solo lectura
+    setTimeout(() => {
+        editor.focus();
+        editor.updateOptions({ readOnly: false });
+        console.log("Editor creado. Modo solo lectura:", editor.getOption(monaco.editor.EditorOption.readOnly));
+    }, 100);
+
+    return editor;
+}
+
+// ==================== LÓGICA DE INSTALACIÓN PWA ====================
+
+function refreshInstallButton() {
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+    const isInstalled = document.referrer.includes('android-app://') || isStandalone;
+    
+    if (isInstalled) {
+        installBtn.style.display = 'none';
+        return;
+    }
+
+    if (deferredPrompt) {
+        installBtn.style.display = 'inline-block';
+    } else {
+        installBtn.style.display = 'none';
+    }
+}
+
+function resetInstallButton() {
+    installBtn.classList.remove('installing');
+    installText.textContent = 'Install App';
+    installSpinner.style.display = 'none';
+}
+
+// Evento para capturar la instalación PWA
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    refreshInstallButton();
+    
+    // Mostrar sugerencia después de 30s
+    setTimeout(() => {
+        if (deferredPrompt) {
+            showToast('Install the app for better experience!');
+        }
+    }, 30000);
+});
+
+// Evento cuando la app ya está instalada
+window.addEventListener('appinstalled', () => {
+    isInstalled = true;
+    deferredPrompt = null;
+    installBtn.classList.add('installed');
+    installText.textContent = 'Installed!';
+    installSpinner.style.display = 'none';
+    showToast('App installed successfully!');
+    updateStatusBar();
+    
+    setTimeout(() => {
+        installBtn.style.display = 'none';
+    }, 3000);
+});
+
+// Manejador del clic en el botón de instalación
+installBtn.addEventListener('click', async () => {
+    if (!deferredPrompt) return;
+    
+    // Estado "instalando"
+    installBtn.classList.add('installing');
+    installText.textContent = 'Installing...';
+    installSpinner.style.display = 'inline';
+    
+    try {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        
+        if (outcome === 'accepted') {
+            installText.textContent = 'Installed!';
+            showToast('Installation started...');
+        } else {
+            resetInstallButton();
+            showToast('Installation canceled', true);
+        }
+    } catch (error) {
+        console.error('Install error:', error);
+        resetInstallButton();
+        showToast('Installation failed', true);
+    }
+});
+
+// ==================== INICIALIZACIÓN DE LA APLICACIÓN ====================
+
+async function initializeApp() {
+    try {
+        // Registrar Service Worker para PWA
+        if ('serviceWorker' in navigator) {
+            try {
+                await navigator.serviceWorker.register('/sw.js');
+                console.log('Service Worker registrado');
+            } catch (swError) {
+                console.log('Service Worker registration failed:', swError);
+            }
+        }
+
+        // Inicializar Monaco Editor
+        await new Promise((resolve) => {
+            require(['vs/editor/editor.main'], resolve);
+        });
+
+        // Crear editor inicial
+        createEditor();
+
+        // Cargar tipos y cambiar a TypeScript
+        const typesLoaded = await loadTypeDefinitions();
+        if (typesLoaded) {
+            monaco.editor.setModelLanguage(editor.getModel(), 'typescript');
+            showToast('API autocomplete loaded!');
+        }
+
+        // Configurar eventos del editor
+        editor.onDidChangeModelContent(updateStatusBar);
+        editor.onDidChangeCursorPosition(updateStatusBar);
+
+        // Configurar selector de módulos
+        document.getElementById('module-select').addEventListener('change', (e) => {
+            const module = e.target.value;
+            editor.setValue(EXAMPLES[module]);
+            editor.focus();
+        });
+
+        // Configurar botones
+        document.getElementById('copy-btn').addEventListener('click', copyScript);
+        document.getElementById('run-btn').addEventListener('click', () => {
+            showToast('Execution feature coming soon!');
+        });
+
+        // Ajustes iniciales
+        updateStatusBar();
+        refreshInstallButton();
+
+        // Bloqueo de zoom no deseado
+        document.addEventListener('wheel', e => {
+            if (e.ctrlKey) e.preventDefault();
+        }, { passive: false });
+
+    } catch (error) {
+        console.error("Error inicializando la aplicación:", error);
+        showToast('Failed to initialize editor', true);
+    }
+}
+
+// Iniciar la aplicación cuando el DOM esté listo
+if (document.readyState === 'complete') {
+    initializeApp();
+} else {
+    window.addEventListener('DOMContentLoaded', initializeApp);
+}
+
+// Verificar cambios en la visibilidad de la página
+document.addEventListener('visibilitychange', refreshInstallButton);
