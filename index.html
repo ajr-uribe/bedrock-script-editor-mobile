@@ -27,11 +27,6 @@
      </select>
     <button id="run-btn">Execute (Soon)</button>
     <button id="copy-btn">Copy</button>
-   
-    <button id="install-btn" style="display: none; background: #4CAF50;">
-        <span id="install-text">Install App</span>
-        <span id="install-spinner" style="display: none;"> ⏳</span>
-    </button>
 </div>
         </div>
         <div id="editor-container">
@@ -236,16 +231,6 @@ gametest.register("TestSuite", "simpleTest", simpleTest)
         // Inicializar la aplicación
         async function initializeApp() {
             try {
-                // Registrar Service Worker para PWA
-                if ('serviceWorker' in navigator) {
-                    try {
-                        await navigator.serviceWorker.register('/sw.js');
-                        console.log('Service Worker registrado');
-                    } catch (swError) {
-                        console.log('Service Worker registration failed:', swError);
-                    }
-                }
-
                 // Inicializar Monaco Editor
                 await new Promise((resolve) => {
                     require(['vs/editor/editor.main'], resolve);
@@ -299,35 +284,6 @@ gametest.register("TestSuite", "simpleTest", simpleTest)
                 showToast('Failed to initialize editor', true);
             }
         }
-
-        // Eventos PWA
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            isInstalled = false;
-            
-            // Mostrar sugerencia de instalación después de 30s de uso
-            setTimeout(() => {
-                if (!isInstalled && deferredPrompt) {
-                    const install = confirm('Install MCBE Script Editor as an app for better experience?');
-                    if (install) {
-                        deferredPrompt.prompt();
-                        deferredPrompt.userChoice.then((choice) => {
-                            if (choice.outcome === 'accepted') {
-                                isInstalled = true;
-                            }
-                            deferredPrompt = null;
-                        });
-                    }
-                }
-            }, 30000);
-        });
-
-        window.addEventListener('appinstalled', () => {
-            isInstalled = true;
-            showToast('App installed successfully!');
-            updateStatusBar();
-        });
 
         // Iniciar la aplicación cuando el DOM esté listo
         if (document.readyState === 'complete') {
