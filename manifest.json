@@ -1,7 +1,7 @@
 {
   "name": "MCBE Script Editor",
   "short_name": "MCBE Editor",
-  "description": "Editor de scripts para Minecraft Bedrock con soporte offline",
+  "description": "Minecraft bedrock scripts editor with mobile support offline",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",
