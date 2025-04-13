@@ -1,362 +1,210 @@
+
     // ===== [1. CONFIGURACIÓN GLOBAL] ===== //
-    const APP_VERSION = '1.0.0';
-    const MONACO_VERSION = '0.40.0';
-    const MONACO_BASE_URL = `https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/${MONACO_VERSION}/min`;
-    const CACHE_NAME = `mcbe-${APP_VERSION}`;
-
-    // ===== [2. CONFIGURACIÓN MONACO EDITOR] ===== //
-    require.config({
-        paths: { 
-            'vs': `${MONACO_BASE_URL}/vs`
+    const APP_VERSION = '1.1.0';
+    const CACHE_NAME = `mcbe-types-${APP_VERSION}`;
+    const TYPE_DEFINITIONS = {
+        server: {
+            path: '/types/@minecraft/server/index.d.ts',
+            alias: 'file:///node_modules/@minecraft/server/index.d.ts'
         },
-        waitSeconds: 60,
-        onNodeCreated: function(node, config, moduleName, url) {
-            node.crossOrigin = 'anonymous';
-        }
-    });
-
-    // ===== [3. WORKER OFFLINE CON FALLBACKS] ===== //
-    window.MonacoEnvironment = {
-        getWorkerUrl: function(moduleId, label) {
-            const workerScript = `
-                // Configuración base
-                self.MonacoEnvironment = { 
-                    baseUrl: '${MONACO_BASE_URL}',
-                    getWorkerUrl: function(moduleId, label) {
-                        return './vs/base/worker/workerMain.js';
-                    }
-                };
-                
-                // Estrategia de fallback
-                const loadFromCache = async () => {
-                    try {
-                        const cache = await caches.open('${CACHE_NAME}');
-                        const response = await cache.match('${MONACO_BASE_URL}/vs/base/worker/workerMain.js');
-                        if (response) {
-                            const js = await response.text();
-                            try {
-                                importScripts('blob:' + URL.createObjectURL(new Blob([js])));
-                                return;
-                            } catch(e) {
-                                console.error('Fallback cache error:', e);
-                            }
-                        }
-                        importScripts('${MONACO_BASE_URL}/vs/base/worker/workerMain.js');
-                    } catch(e) {
-                        console.error('Error loading worker:', e);
-                    }
-                };
-                
-                // Intentar carga normal primero
-                try {
-                    importScripts('${MONACO_BASE_URL}/vs/base/worker/workerMain.js');
-                } catch(e) {
-                    console.log('Usando fallback de cache...');
-                    loadFromCache();
-                }
-            `;
-            return `data:text/javascript;base64,${btoa(workerScript)}`;
+        serverUI: {
+            path: '/types/@minecraft/server-ui/index.d.ts',
+            alias: 'file:///node_modules/@minecraft/server-ui/index.d.ts'
+        },
+        serverGametest: {
+            path: '/types/@minecraft/server-gametest/index.d.ts',
+            alias: 'file:///node_modules/@minecraft/server-gametest/index.d.ts'
         }
     };
 
-    // ===== [4. VARIABLES GLOBALES] ===== //
-    let editor;
-    let deferredPrompt;
-    const EXAMPLES = {
-        server: `// @minecraft/server example\nimport { world } from '@minecraft/server';\n\nworld.afterEvents.playerSpawn.subscribe(() => {\n  // Tu código aquí\n});`,
-        'server-ui': `// @minecraft/server-ui example\nimport { ActionForm } from '@minecraft/server-ui';\n\n// Código de ejemplo UI`,
-        'server-gametest': `// @minecraft/server-gametest example\nimport * as gametest from '@minecraft/server-gametest';\n\n// Código de ejemplo Gametest`
-    };
-
-    // ===== [5. FUNCIONES DE CACHE OFFLINE] ===== //
-    async function cacheCriticalAssets() {
-        const assets = [
-            '/',
-            '/index.html',
-            '/manifest.json',
-            '/icons/favicon.png',
-            '/offline.html',
-            `${MONACO_BASE_URL}/vs/loader.min.js`,
-            `${MONACO_BASE_URL}/vs/base/worker/workerMain.js`,
-            `${MONACO_BASE_URL}/vs/editor/editor.main.js`,
-            `${MONACO_BASE_URL}/vs/basic-languages/javascript/javascript.js`,
-            '/types/@minecraft/server/index.d.ts',
-            '/types/@minecraft/server-ui/index.d.ts',
-            '/types/@minecraft/server-gametest/index.d.ts'
-        ];
-
+    // ===== [2. FUNCIONES DE CACHE PARA TIPOS] ===== //
+    async function cacheTypeDefinitions() {
         try {
             const cache = await caches.open(CACHE_NAME);
-            await Promise.all(assets.map(asset => {
-                return cache.add(asset).catch(err => {
-                    console.warn(`No se pudo cachear ${asset}:`, err);
-                });
-            }));
-            console.log('Assets críticos cacheados');
-            return true;
-        } catch (error) {
-            console.error('Error cacheando assets:', error);
-            return false;
-        }
-    }
-
-    // ===== [6. INICIALIZACIÓN DEL EDITOR] ===== //
-    async function initializeEditor() {
-        return new Promise((resolve, reject) => {
-            // Verificar si Monaco ya está cargado
-            if (window.monaco) {
-                resolve(window.monaco);
-                return;
-            }
-
-            // Cargar Monaco con manejo de errores
-            require(['vs/editor/editor.main'], () => {
+            await Promise.all(Object.values(TYPE_DEFINITIONS).map(async (type) => {
                 try {
-                    const editorInstance = monaco.editor.create(document.getElementById('monaco-editor'), {
-                        value: '// Cargando editor...\n// Espera un momento por favor',
-                        language: 'javascript',
-                        theme: 'vs-dark',
-                        automaticLayout: true,
-                        minimap: { enabled: true },
-                        fontSize: 14,
-                        lineHeight: 24
-                    });
-                    resolve(editorInstance);
-                } catch (e) {
-                    reject(new Error(`Error creando editor: ${e.message}`));
+                    const response = await fetch(type.path);
+                    if (response.ok) {
+                        await cache.put(type.path, response.clone());
+                        console.log(`Cached: ${type.path}`);
+                    }
+                } catch (error) {
+                    console.warn(`Failed to cache ${type.path}:`, error);
                 }
-            }, (err) => {
-                reject(new Error(`Error cargando Monaco: ${err.requireModules || err.message}`));
             });
-        });
+        } catch (error) {
+            console.error('Error initializing type cache:', error);
+        }
     }
 
-    // ===== [7. CARGA DE TIPOS] ===== //
-    async function loadTypeDefinitions() {
-        const typeFiles = {
-            server: '/types/@minecraft/server/index.d.ts',
-            'server-ui': '/types/@minecraft/server-ui/index.d.ts',
-            'server-gametest': '/types/@minecraft/server-gametest/index.d.ts'
-        };
-
+    async function getTypeDefinition(path) {
         try {
-            const cache = await caches.open(CACHE_NAME);
-
-            for (const [module, path] of Object.entries(typeFiles)) {
-                try {
-                    // Intentar desde red primero
-                    const response = await fetch(path);
-                    if (!response.ok) throw new Error('Network response not OK');
-
-                    const content = await response.text();
-                    monaco.languages.typescript.typescriptDefaults.addExtraLib(
-                        content,
-                        `file:///node_modules/@minecraft/${module}/index.d.ts`
-                    );
-
-                    // Guardar en cache
-                    await cache.put(path, new Response(content));
-                } catch (networkError) {
-                    console.log(`Usando cache para ${module}...`);
-
-                    // Fallback a cache
-                    const cached = await cache.match(path);
-                    if (cached) {
-                        const content = await cached.text();
-                        monaco.languages.typescript.typescriptDefaults.addExtraLib(
-                            content,
-                            `file:///node_modules/@minecraft/${module}/index.d.ts`
-                        );
-                    }
-                }
+            // Intentar desde red primero
+            const networkResponse = await fetch(path);
+            if (networkResponse.ok) {
+                const content = await networkResponse.text();
+                await cacheTypeDefinition(path, content);
+                return content;
             }
+            throw new Error('Network request failed');
+        } catch (networkError) {
+            // Fallback a cache
+            const cache = await caches.open(CACHE_NAME);
+            const cachedResponse = await cache.match(path);
+            if (cachedResponse) {
+                return await cachedResponse.text();
+            }
+            throw new Error('Not available in cache');
+        }
+    }
 
-            // Configurar TypeScript
+    // ===== [3. CARGA DE DEFINICIONES DE TIPO] ===== //
+    async function loadMinecraftTypes() {
+        try {
+            // Configuración del compilador TypeScript
             monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
                 target: monaco.languages.typescript.ScriptTarget.ES2020,
                 allowNonTsExtensions: true,
                 moduleResolution: monaco.languages.typescript.ModuleResolutionKind.NodeJs,
-                module: monaco.languages.typescript.ModuleKind.CommonJS,
+                module: monaco.languages.typescript.ModuleKind.ES2015,
                 typeRoots: ["file:///types"],
                 paths: {
-                    "@minecraft/server": ["/@minecraft/server"],
-                    "@minecraft/server-ui": ["/@minecraft/server-ui"],
-                    "@minecraft/server-gametest": ["/@minecraft/server-gametest"]
-                }
+                    "@minecraft/server": ["node_modules/@minecraft/server"],
+                    "@minecraft/server-ui": ["node_modules/@minecraft/server-ui"],
+                    "@minecraft/server-gametest": ["node_modules/@minecraft/server-gametest"]
+                },
+                strict: true
             });
+
+            // Cargar cada definición
+            for (const [key, type] of Object.entries(TYPE_DEFINITIONS)) {
+                try {
+                    const content = await getTypeDefinition(type.path);
+                    monaco.languages.typescript.typescriptDefaults.addExtraLib(content, type.alias);
+                    console.log(`Loaded: ${key}`);
+                } catch (error) {
+                    console.error(`Failed to load ${key}:`, error);
+                    throw new Error(`Missing ${key} type definition`);
+                }
+            }
 
             return true;
         } catch (error) {
-            console.error('Error cargando tipos:', error);
+            console.error('Error loading type definitions:', error);
+            showToast('Error loading Minecraft API definitions', true);
+            return false;
+        }
+    }
+
+    // ===== [4. INTEGRACIÓN CON MONACO] ===== //
+    async function initializeEditorWithTypes() {
+        try {
+            // 1. Crear editor básico
+            const editor = monaco.editor.create(document.getElementById('monaco-editor'), {
+                value: '// Loading Minecraft API...\n// Please wait',
+                language: 'javascript',
+                theme: 'vs-dark'
+            });
+
+            // 2. Cargar tipos (con retroalimentación visual)
+            editor.setValue('// Loading type definitions...');
+            const typesLoaded = await loadMinecraftTypes();
+            
+            if (typesLoaded) {
+                // 3. Configurar editor completo
+                editor.setModel(monaco.editor.createModel(
+                    EXAMPLES.server,
+                    'typescript',
+                    monaco.Uri.parse('file:///main.ts')
+                ));
+                
+                // 4. Configurar eventos
+                setupEditorEvents(editor);
+                showToast('Minecraft API loaded successfully');
+                return editor;
+            } else {
+                throw new Error('Type definitions failed to load');
+            }
+        } catch (error) {
+            showError('Failed to initialize editor with types', error);
             throw error;
         }
     }
 
-    // ===== [8. MANEJO DE INSTALACIÓN PWA] ===== //
-    function updateInstallButton() {
-        const installBtn = document.getElementById('install-btn');
-        if (!installBtn) return;
-
-        const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-
-        if (isStandalone) {
-            installBtn.classList.add('installed');
-            installBtn.classList.remove('available');
-            installBtn.textContent = "Instalada";
-            installBtn.disabled = true;
-        } else if (deferredPrompt) {
-            installBtn.classList.add('available');
-            installBtn.classList.remove('installed');
-            installBtn.textContent = "Instalar";
-            installBtn.disabled = false;
-        } else {
-            installBtn.classList.remove('available', 'installed');
-            installBtn.textContent = "Instalar";
-            installBtn.disabled = true;
-        }
-    }
-
-    function setupPWAEvents() {
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            updateInstallButton();
-
-            // Para iOS que no soporta beforeinstallprompt
-            if (/iPad|iPhone|iPod/.test(navigator.userAgent)) {
-                document.getElementById('ios-install-help').style.display = 'block';
-            }
-        });
-
-        window.addEventListener('appinstalled', () => {
-            deferredPrompt = null;
-            showToast('¡Aplicación instalada correctamente!');
-            updateInstallButton();
-        });
-
-        document.getElementById('install-btn')?.addEventListener('click', () => {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                deferredPrompt.userChoice.then(choice => {
-                    if (choice.outcome === 'accepted') {
-                        showToast('Instalación en progreso...');
-                    }
-                    deferredPrompt = null;
-                    updateInstallButton();
-                });
-            }
-        });
-    }
-
-    // ===== [9. MANEJO DE ERRORES] ===== //
-    function showError(message, error) {
-        console.error(message, error);
-        const errorHtml = `
-            <div class="error-container">
-                <h3>Error de inicialización</h3>
-                <p>${message}</p>
-                <p><small>${error?.message || ''}</small></p>
-                <button onclick="window.location.reload()">Reintentar</button>
-                ${!navigator.onLine ? '<p class="offline-warning">Estás trabajando offline</p>' : ''}
-            </div>
-        `;
-        document.getElementById('monaco-editor').innerHTML = errorHtml;
-    }
-
+    // ===== [5. FUNCIONES AUXILIARES] ===== //
     function showToast(message, isError = false) {
         const toast = document.getElementById('toast');
         if (!toast) return;
-
+        
         toast.textContent = message;
         toast.style.backgroundColor = isError ? '#d32f2f' : '#007acc';
         toast.style.display = 'block';
-
+        
         setTimeout(() => {
             toast.style.display = 'none';
         }, 3000);
     }
 
-    // ===== [10. INICIALIZACIÓN PRINCIPAL] ===== //
+    function showError(title, error) {
+        const editorContainer = document.getElementById('monaco-editor');
+        editorContainer.innerHTML = `
+            <div class="error-message">
+                <h3>${title}</h3>
+                <p>${error.message}</p>
+                <div class="error-actions">
+                    <button onclick="retryInitialization()">Reintentar</button>
+                    <button onclick="loadBasicEditor()">Cargar sin autocompletado</button>
+                </div>
+            </div>
+        `;
+    }
+
+    // ===== [6. INICIALIZACIÓN COMPLETA] ===== //
     async function initializeApp() {
         try {
-            // Paso 1: Cachear assets críticos
-            showToast('Preparando aplicación...');
-            await cacheCriticalAssets();
-
-            // Paso 2: Inicializar editor
-            showToast('Cargando editor...');
-            editor = await initializeEditor();
-
-            // Paso 3: Cargar tipos
-            showToast('Cargando autocompletado...');
-            await loadTypeDefinitions();
-            monaco.editor.setModelLanguage(editor.getModel(), 'typescript');
-
-            // Paso 4: Configurar ejemplos
-            document.getElementById('module-select').addEventListener('change', (e) => {
-                const module = e.target.value;
-                editor.setValue(EXAMPLES[module] || '// Selecciona un módulo');
+            // 1. Cachear recursos iniciales
+            showToast('Preparing offline support...');
+            await cacheTypeDefinitions();
+            
+            // 2. Inicializar Monaco
+            showToast('Loading editor...');
+            await new Promise((resolve) => {
+                require(['vs/editor/editor.main'], resolve);
             });
-
-            // Paso 5: Configurar PWA
+            
+            // 3. Cargar editor con tipos
+            window.editor = await initializeEditorWithTypes();
+            
+            // 4. Configuración adicional
             setupPWAEvents();
             updateInstallButton();
-
-            // Paso 6: Configurar eventos del editor
-            editor.onDidChangeModelContent(() => {
-                const position = editor.getPosition();
-                document.getElementById('status-bar').textContent = 
-                    `Línea ${position.lineNumber}, Col ${position.column} | ${editor.getModel().getLineCount()} líneas`;
-            });
-
-            showToast('¡Editor listo!');
-            console.log('Aplicación inicializada correctamente');
-
+            
         } catch (error) {
-            showError('No se pudo iniciar el editor', error);
-            throw error;
+            console.error('App initialization failed:', error);
+            showError('Application failed to start', error);
         }
     }
 
-    // ===== [11. EVENTOS DE CONEXIÓN] ===== //
-    function handleConnectionChange() {
-        if (navigator.onLine) {
-            showToast('Conexión restablecida');
-            if (!editor) initializeApp();
-        } else {
-            showToast('Modo offline activado', true);
-        }
-    }
-
-    // ===== [12. INICIO DE LA APLICACIÓN] ===== //
-    document.addEventListener('DOMContentLoaded', () => {
-        // Verificar estado de conexión
-        window.addEventListener('online', handleConnectionChange);
-        window.addEventListener('offline', handleConnectionChange);
-
-        // Iniciar la aplicación
-        initializeApp().catch(e => console.error('Error crítico:', e));
-    });
-
-    // ===== [13. FUNCIONES AUXILIARES GLOBALES] ===== //
-    async function copyScript() {
-        try {
-            const text = editor?.getValue() || '';
-            await navigator.clipboard.writeText(text);
-            showToast('Código copiado al portapapeles');
-        } catch (err) {
-            showToast('Error al copiar el código', true);
-            console.error('Error al copiar:', err);
-        }
-    }
-
-    // Exponer funciones globales necesarias
-    window.InstallApp = function() {
-        if (deferredPrompt) {
-            deferredPrompt.prompt();
-        } else {
-            showToast('Usa el menú de instalación del navegador');
-        }
+    // ===== [7. MANEJO DE RECARGA] ===== //
+    window.retryInitialization = function() {
+        document.getElementById('monaco-editor').innerHTML = '';
+        initializeApp();
     };
 
-    window.copyScript = copyScript;
+    window.loadBasicEditor = function() {
+        document.getElementById('monaco-editor').innerHTML = '';
+        initializeBasicEditor();
+    };
+
+    // ===== [8. INICIO DE LA APLICACIÓN] ===== //
+    document.addEventListener('DOMContentLoaded', () => {
+        // Configurar Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js')
+                .then(() => console.log('SW registered'))
+                .catch(err => console.error('SW registration failed:', err));
+        }
+        
+        // Iniciar la aplicación
+        initializeApp();
+    });
