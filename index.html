@@ -171,7 +171,7 @@
     <div class="toast" id="toast"></div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.40.0/min/vs/loader.min.js"></script>
- <script>
+<script>
     // Configuración global de Monaco
     require.config({ 
         paths: { 
@@ -253,15 +253,18 @@ gametest.register("TestSuite", "simpleTest", simpleTest)
             installBtn.classList.add('installed');
             installBtn.classList.remove('available');
             installBtn.textContent = "Instalada";
+            installBtn.disabled = true;
         } else if (deferredPrompt) {
             // Disponible para instalar - Botón verde
             installBtn.classList.add('available');
             installBtn.classList.remove('installed');
             installBtn.textContent = "Instalar";
+            installBtn.disabled = false;
         } else {
             // No instalable - Botón normal
             installBtn.classList.remove('available', 'installed');
             installBtn.textContent = "Instalar";
+            installBtn.disabled = false;
         }
     }
 
@@ -302,14 +305,114 @@ gametest.register("TestSuite", "simpleTest", simpleTest)
         updateInstallButton();
     });
 
-    // ===== [4. FUNCIONES EXISTENTES (sin cambios)] ===== //
-    async function loadTypeDefinitions() { /* ... (tu código existente) ... */ }
-    function showToast(message, isError = false) { /* ... (tu código existente) ... */ }
-    async function copyScript() { /* ... (tu código existente) ... */ }
-    function updateStatusBar() { /* ... (tu código existente) ... */ }
-    function createEditor() { /* ... (tu código existente) ... */ }
+    // ===== [4. FUNCIONES AUXILIARES] ===== //
+    function showToast(message, isError = false) {
+        const toast = document.getElementById('toast');
+        toast.textContent = message;
+        toast.style.backgroundColor = isError ? '#d32f2f' : '#007acc';
+        toast.style.display = 'block';
 
-    // ===== [5. INICIALIZACIÓN] ===== //
+        setTimeout(() => {
+            toast.style.display = 'none';
+        }, 3000);
+    }
+
+    async function copyScript() {
+        try {
+            const text = editor.getValue();
+            await navigator.clipboard.writeText(text);
+            showToast('Code copied to clipboard!');
+        } catch (err) {
+            console.error('Error al copiar:', err);
+            showToast('Error copying code', true);
+        }
+    }
+
+    function updateStatusBar() {
+        if (!editor) return;
+        const statusBar = document.getElementById('status-bar');
+        const lineCount = editor.getModel().getLineCount();
+        const position = editor.getPosition();
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+        statusBar.textContent = `Line ${position.lineNumber}, Col ${position.column} | ${lineCount} lines | ${isStandalone ? 'PWA' : 'Web'}`;
+    }
+
+    // ===== [5. FUNCIONES DEL EDITOR] ===== //
+    function createEditor() {
+        if (editor) {
+            editor.dispose();
+            document.getElementById('monaco-editor').innerHTML = '';
+        }
+
+        editor = monaco.editor.create(document.getElementById('monaco-editor'), {
+            value: EXAMPLES.server,
+            language: 'javascript',
+            theme: 'vs-dark',
+            automaticLayout: true,
+            readOnly: false,
+            fontSize: 16,
+            lineHeight: 24,
+            minimap: { enabled: true },
+            scrollBeyondLastLine: false,
+            roundedSelection: true,
+            mouseWheelZoom: false
+        });
+
+        setTimeout(() => {
+            editor.focus();
+            editor.updateOptions({ readOnly: false });
+        }, 100);
+
+        return editor;
+    }
+
+    async function loadTypeDefinitions() {
+        try {
+            const [serverTypes, serverUiTypes, gameTestTypes] = await Promise.all([
+                fetch('/types/@minecraft/server/index.d.ts').then(r => r.text()),
+                fetch('/types/@minecraft/server-ui/index.d.ts').then(r => r.text()),
+                fetch('/types/@minecraft/server-gametest/index.d.ts').then(r => r.text())
+            ]);
+
+            monaco.languages.typescript.typescriptDefaults.addExtraLib(
+                serverTypes,
+                'file:///node_modules/@minecraft/server/index.d.ts'
+            );
+
+            monaco.languages.typescript.typescriptDefaults.addExtraLib(
+                serverUiTypes,
+                'file:///node_modules/@minecraft/server-ui/index.d.ts'
+            );
+
+            monaco.languages.typescript.typescriptDefaults.addExtraLib(
+                gameTestTypes,
+                'file:///node_modules/@minecraft/server-gametest/index.d.ts'
+            );
+
+            monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
+                target: monaco.languages.typescript.ScriptTarget.ES2020,
+                allowNonTsExtensions: true,
+                moduleResolution: monaco.languages.typescript.ModuleResolutionKind.NodeJs,
+                module: monaco.languages.typescript.ModuleKind.CommonJS,
+                typeRoots: ["file:///types"],
+                baseUrl: "file:///",
+                paths: {
+                    "@minecraft/server": ["node_modules/@minecraft/server"],
+                    "@minecraft/server-ui": ["node_modules/@minecraft/server-ui"],
+                    "@minecraft/server-gametest": ["node_modules/@minecraft/server-gametest"]
+                },
+                strict: true
+            });
+
+            return true;
+        } catch (error) {
+            console.error("Error cargando tipos:", error);
+            showToast('Error loading API definitions', true);
+            return false;
+        }
+    }
+
+    // ===== [6. INICIALIZACIÓN PRINCIPAL] ===== //
     async function initializeApp() {
         try {
             if ('serviceWorker' in navigator) {
@@ -359,12 +462,12 @@ gametest.register("TestSuite", "simpleTest", simpleTest)
         }
     }
 
-    // Inicialización al cargar la página
+    // ===== [7. INICIO DE LA APLICACIÓN] ===== //
     window.addEventListener('DOMContentLoaded', () => {
         if (!window.matchMedia('(display-mode: standalone)').matches) {
             localStorage.clear();
         }
-        updateInstallButton(); // Estado inicial del botón
+        updateInstallButton();
         initializeApp();
     });
 </script>
