@@ -128,11 +128,20 @@
             h1 {
                 font-size: 1.2rem;
             }
-            #install-btn {
-                position: fixed;
-                top: 15px;
-                right: 15px;
-        }
+            /* Estilos para el botón de instalación */
+#install-btn {
+position: fixed;
+top: 15px;
+right: 15px;
+  background-color: #4CAF50; /* Verde cuando se puede instalar */
+  color: white;
+}
+
+#install-btn.installed {
+  background-color: #cccccc; /* Gris cuando ya está instalado */
+opacity: 0.5;
+  cursor: default;
+}
     </style>
 </head>
 <body>
@@ -244,7 +253,6 @@ gametest.register("TestSuite", "simpleTest", simpleTest)
             } else {
                 installBtn.disabled = false;
                 installBtn.textContent = "Instalar";
-                installButton.style.background-color = "#0fe70a";
             }
         }
 
