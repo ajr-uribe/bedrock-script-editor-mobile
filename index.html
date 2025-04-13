@@ -208,9 +208,48 @@
 
     // 3. EJEMPLOS DE CÓDIGO (igual que antes)
     const EXAMPLES = {
-        server: `// @minecraft/server example...`, 
-        'server-ui': `// @minecraft/server-ui example...`,
-        'server-gametest': `// @minecraft/server-gametest example...`
+        server: `// @minecraft/server example
+import { world, system } from '@minecraft/server';
+
+world.afterEvents.playerSpawn.subscribe((event) => {
+    const player = event.player;
+    player.sendMessage("¡Bienvenido al mundo!");
+    
+    system.runInterval(() => {
+        player.onScreenDisplay.setTitle("¡Hola Minecraft!");
+    }, 20);
+});`, 
+        'server-ui': `// @minecraft/server-ui example
+import { ActionForm } from '@minecraft/server-ui';
+
+async function showForm(player) {
+    const form = new ActionForm()
+        .title("Menú de Acción")
+        .body("Selecciona una opción:")
+        .button("Opción 1")
+        .button("Opción 2");
+    
+    const response = await form.show(player);
+    if (response.selection === 0) {
+        player.sendMessage("Seleccionaste el botón 1");
+    }
+}`,
+        'server-gametest': `// @minecraft/server-gametest example
+import * as gametest from '@minecraft/server-gametest';
+
+function simpleTest(test) {
+    const player = test.spawnSimulatedPlayer({ x: 0, y: 1, z: 0 });
+    test.assert(player.isValid(), "El jugador debería ser válido");
+    
+    test.succeedWhen(() => {
+        const block = test.getBlock({ x: 0, y: 0, z: 0 });
+        test.assert(block.typeId === "minecraft:stone", "Debería haber piedra en (0,0,0)");
+    });
+}
+
+gametest.register("TestSuite", "simpleTest", simpleTest)
+    .maxTicks(100)
+    .structureName("test:structure");`
     };
 
     // 4. SISTEMA DE INSTALACIÓN (BOTÓN VERDE/GRIS)
