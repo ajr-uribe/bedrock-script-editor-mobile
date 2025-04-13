@@ -1,8 +1,9 @@
-const CACHE_NAME = 'mcbe-editor-v3';
+const CACHE_NAME = 'mcbe-editor-v4';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
-  '/icons/favicon.png',
+  '/manifest.json',
+    '/icons/favicon.png',
   '/types/@minecraft/server/index.d.ts',
   '/types/@minecraft/server-ui/index.d.ts',
   '/types/@minecraft/server-gametest/index.d.ts',
@@ -15,30 +16,28 @@ const ASSETS_TO_CACHE = [
   'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.40.0/min/vs/language/typescript/tsWorker.js'
 ];
 
+// Instalación: Cachear recursos
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(ASSETS_TO_CACHE))
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS_TO_CACHE))
   );
 });
 
+// Estrategia: Cache First
 self.addEventListener('fetch', (event) => {
   event.respondWith(
-    caches.match(event.request)
-      .then((response) => response || fetch(event.request))
+    caches.match(event.request).then((response) => {
+      return response || fetch(event.request);
+    })
   );
 });
 
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cache) => {
-          if (cache !== CACHE_NAME) {
-            return caches.delete(cache);
-          }
-        })
-      );
-    })
-  );
+// ======== NUEVO: Limpieza al desinstalar ========
+self.addEventListener('unload', () => {
+  caches.keys().then((cacheNames) => {
+    cacheNames.forEach((name) => caches.delete(name));
+  });
+  indexedDB.databases().then((dbs) => {
+    dbs.forEach((db) => indexedDB.deleteDatabase(db.name));
+  });
 });
