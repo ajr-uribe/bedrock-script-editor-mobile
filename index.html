@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta property="og:title" content="MCBE Script Editor">
-        <meta property="og:description" content="Minecraft bedrock Editor for easily making Scripts with auto-completions">
+    <meta property="og:description" content="Minecraft bedrock Editor for easily making Scripts with auto-completions">
     <meta property="og:image" content="https://res.cloudinary.com/dchi3dtvc/image/upload/favicon_xngegt.png">
     <meta property="og:url" content="https://ajr-uribe-editor.vercel.app?v2"> 
     <meta property="og:type" content="website"> 
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="manifest" href="/manifest.json">
-    <link rel="website icon" href="./icons/favicon.png">
+    <link rel="icon" href="./icons/favicon.png">
     <meta name="theme-color" content="#007acc">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -63,6 +63,11 @@
         }
         button:hover {
             background: #444;
+        }
+        button:disabled {
+            opacity: 0.7;
+            cursor: default;
+            background: #333 !important;
         }
         #editor-container {
             flex: 1;
@@ -138,7 +143,7 @@
                 </select>
                 <button id="run-btn">Execute (Soon)</button>
                 <button id="copy-btn">Copy</button>
-                <button id="install-btn" onClick="InstallApp()">Install</button>
+                <button id="install-btn" onclick="InstallApp()">Install</button>
             </div>
         </div>
         <div id="editor-container">
@@ -197,7 +202,7 @@ import { ActionForm } from '@minecraft/server-ui';
 async function showForm(player) {
     const form = new ActionForm()
         .title("Menú de Acción")
-        .body("Selecciona una opción:")
+        .body("Selecciona una opci��n:")
         .button("Opción 1")
         .button("Opción 2");
     
@@ -239,12 +244,12 @@ gametest.register("TestSuite", "simpleTest", simpleTest)
                     serverTypes,
                     'file:///node_modules/@minecraft/server/index.d.ts'
                 );
-                
+
                 monaco.languages.typescript.typescriptDefaults.addExtraLib(
                     serverUiTypes,
                     'file:///node_modules/@minecraft/server-ui/index.d.ts'
                 );
-                
+
                 monaco.languages.typescript.typescriptDefaults.addExtraLib(
                     gameTestTypes,
                     'file:///node_modules/@minecraft/server-gametest/index.d.ts'
@@ -412,28 +417,32 @@ gametest.register("TestSuite", "simpleTest", simpleTest)
             e.preventDefault();
             deferredPrompt = e;
             isInstalled = false;
-            
-            // Mostrar sugerencia de instalación después de 30s de uso
-            function InstallApp() {
-                if (!isInstalled && deferredPrompt) {
-                    const install = confirm('Install MCBE Script Editor as an app for better experience?');
-                    if (install) {
-                        deferredPrompt.prompt();
-                        deferredPrompt.userChoice.then((choice) => {
-                            if (choice.outcome === 'accepted') {
-                                isInstalled = true;
-                            }
-                            deferredPrompt = null;
-                        });
-                    }
-                }
-            }
         });
+
+        function InstallApp() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choice) => {
+                    if (choice.outcome === 'accepted') {
+                        isInstalled = true;
+                        showToast('App installed successfully!');
+                        updateStatusBar();
+                        document.getElementById('install-btn').disabled = true;
+                        document.getElementById('install-btn').textContent = "Installed";
+                    }
+                    deferredPrompt = null;
+                });
+            } else {
+                showToast('App already installed or not installable', true);
+            }
+        }
 
         window.addEventListener('appinstalled', () => {
             isInstalled = true;
             showToast('App installed successfully!');
             updateStatusBar();
+            document.getElementById('install-btn').disabled = true;
+            document.getElementById('install-btn').textContent = "Installed";
         });
 
         // Iniciar la aplicación cuando el DOM esté listo
