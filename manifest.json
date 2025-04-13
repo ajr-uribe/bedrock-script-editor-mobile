@@ -1,8 +1,8 @@
 {
   "name": "MCBE Script Editor",
   "short_name": "MCBE Editor",
-  "description": "Minecraft Bedrock Script Editor with autocompletions",
-  "start_url": "/",
+  "description": "Minecraft Bedrock Script Editor",
+  "start_url": "/?source=pwa",
   "display": "standalone",
   "theme_color": "#007acc",
   "background_color": "#1e1e1e",
