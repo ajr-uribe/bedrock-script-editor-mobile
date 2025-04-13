@@ -180,7 +180,6 @@
         // Variables globales
         let deferredPrompt;
         let editor;
-        let isInstalled = false;
 
         // Ejemplos de código para cada módulo
         const EXAMPLES = {
@@ -202,7 +201,7 @@ import { ActionForm } from '@minecraft/server-ui';
 async function showForm(player) {
     const form = new ActionForm()
         .title("Menú de Acción")
-        .body("Selecciona una opci��n:")
+        .body("Selecciona una opción:")
         .button("Opción 1")
         .button("Opción 2");
     
@@ -230,6 +229,45 @@ gametest.register("TestSuite", "simpleTest", simpleTest)
     .structureName("test:structure");`
         };
 
+        // Función para verificar estado PWA
+        function checkPWAStatus() {
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+            const installBtn = document.getElementById('install-btn');
+            
+            if (isStandalone) {
+                installBtn.disabled = true;
+                installBtn.textContent = "Instalada";
+            } else {
+                installBtn.disabled = false;
+                installBtn.textContent = "Instalar";
+            }
+        }
+
+        // Función de instalación mejorada
+        function InstallApp() {
+            if (window.matchMedia('(display-mode: standalone)').matches) {
+                showToast('La app ya está instalada', false);
+                return;
+            }
+
+            if (deferredPrompt) {
+                deferredPrompt.prompt().then(() => {
+                    return deferredPrompt.userChoice;
+                }).then((choice) => {
+                    if (choice.outcome === 'accepted') {
+                        showToast('¡App instalada!', false);
+                        checkPWAStatus();
+                    }
+                    deferredPrompt = null;
+                }).catch((err) => {
+                    console.error("Error al instalar:", err);
+                    showToast('Usa el menú del navegador', false);
+                });
+            } else {
+                showToast('Selecciona "Instalar" en el menú de Chrome', false);
+            }
+        }
+
         // Función para cargar los tipos de definición
         async function loadTypeDefinitions() {
             try {
@@ -239,7 +277,6 @@ gametest.register("TestSuite", "simpleTest", simpleTest)
                     fetch('/types/@minecraft/server-gametest/index.d.ts').then(r => r.text())
                 ]);
 
-                // Configurar los tipos en Monaco
                 monaco.languages.typescript.typescriptDefaults.addExtraLib(
                     serverTypes,
                     'file:///node_modules/@minecraft/server/index.d.ts'
@@ -255,7 +292,6 @@ gametest.register("TestSuite", "simpleTest", simpleTest)
                     'file:///node_modules/@minecraft/server-gametest/index.d.ts'
                 );
 
-                // Configuración del compilador TypeScript
                 monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
                     target: monaco.languages.typescript.ScriptTarget.ES2020,
                     allowNonTsExtensions: true,
@@ -302,155 +338,3 @@ gametest.register("TestSuite", "simpleTest", simpleTest)
                 showToast('Error copying code', true);
             }
         }
-
-        // Función para actualizar la barra de estado
-        function updateStatusBar() {
-            if (!editor) return;
-            const statusBar = document.getElementById('status-bar');
-            const lineCount = editor.getModel().getLineCount();
-            const position = editor.getPosition();
-            statusBar.textContent = `Line ${position.lineNumber}, Col ${position.column} | ${lineCount} lines | ${isInstalled ? 'PWA' : 'Web'}`;
-        }
-
-        // Función para crear/recrear el editor
-        function createEditor() {
-            // Limpiar contenedor si ya existe un editor
-            if (editor) {
-                editor.dispose();
-                document.getElementById('monaco-editor').innerHTML = '';
-            }
-
-            // Crear nuevo editor
-            editor = monaco.editor.create(document.getElementById('monaco-editor'), {
-                value: EXAMPLES.server,
-                language: 'javascript',
-                theme: 'vs-dark',
-                automaticLayout: true,
-                readOnly: false,
-                fontSize: 16,
-                lineHeight: 24,
-                minimap: { enabled: true },
-                scrollBeyondLastLine: false,
-                roundedSelection: true,
-                mouseWheelZoom: false
-            });
-
-            // Forzar foco y asegurar que no esté en modo solo lectura
-            setTimeout(() => {
-                editor.focus();
-                editor.updateOptions({ readOnly: false });
-                console.log("Editor creado. Modo solo lectura:", editor.getOption(monaco.editor.EditorOption.readOnly));
-            }, 100);
-
-            return editor;
-        }
-
-        // Inicializar la aplicación
-        async function initializeApp() {
-            try {
-                // Registrar Service Worker para PWA
-                if ('serviceWorker' in navigator) {
-                    try {
-                        await navigator.serviceWorker.register('/sw.js');
-                        console.log('Service Worker registrado');
-                    } catch (swError) {
-                        console.log('Service Worker registration failed:', swError);
-                    }
-                }
-
-                // Inicializar Monaco Editor
-                await new Promise((resolve) => {
-                    require(['vs/editor/editor.main'], resolve);
-                });
-
-                // Crear editor inicial
-                createEditor();
-
-                // Cargar tipos y cambiar a TypeScript
-                const typesLoaded = await loadTypeDefinitions();
-                if (typesLoaded) {
-                    monaco.editor.setModelLanguage(editor.getModel(), 'typescript');
-                    showToast('API autocomplete loaded!');
-                }
-
-                // Configurar eventos del editor
-                editor.onDidChangeModelContent(updateStatusBar);
-                editor.onDidChangeCursorPosition(updateStatusBar);
-
-                // Configurar selector de módulos
-                document.getElementById('module-select').addEventListener('change', (e) => {
-                    const module = e.target.value;
-                    editor.setValue(EXAMPLES[module]);
-                    editor.focus();
-                });
-
-                // Configurar botones
-                document.getElementById('copy-btn').addEventListener('click', copyScript);
-                document.getElementById('run-btn').addEventListener('click', () => {
-                    showToast('Execution feature coming soon!');
-                });
-
-                // Ajustes iniciales
-                updateStatusBar();
-
-                // Bloqueo de zoom no deseado
-                document.addEventListener('wheel', e => {
-                    if (e.ctrlKey) e.preventDefault();
-                }, { passive: false });
-
-                // Verificar estado del editor después de 1 segundo
-                setTimeout(() => {
-                    console.log("Verificación final del editor:");
-                    console.log("- Modo solo lectura:", editor.getOption(monaco.editor.EditorOption.readOnly));
-                    console.log("- Tiene foco:", editor.hasTextFocus());
-                    console.log("- Es visible:", editor.getLayoutInfo().width > 0);
-                }, 1000);
-
-            } catch (error) {
-                console.error("Error inicializando la aplicación:", error);
-                showToast('Failed to initialize editor', true);
-            }
-        }
-
-        // Eventos PWA
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            isInstalled = false;
-        });
-
-        function InstallApp() {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                deferredPrompt.userChoice.then((choice) => {
-                    if (choice.outcome === 'accepted') {
-                        isInstalled = true;
-                        showToast('App installed successfully!');
-                        updateStatusBar();
-                        document.getElementById('install-btn').disabled = true;
-                        document.getElementById('install-btn').textContent = "Installed";
-                    }
-                    deferredPrompt = null;
-                });
-            } else {
-                showToast('App already installed or not installable', true);
-            }
-        }
-
-        window.addEventListener('appinstalled', () => {
-            isInstalled = true;
-            showToast('App installed successfully!');
-            updateStatusBar();
-            document.getElementById('install-btn').disabled = true;
-            document.getElementById('install-btn').textContent = "Installed";
-        });
-
-        // Iniciar la aplicación cuando el DOM esté listo
-        if (document.readyState === 'complete') {
-            initializeApp();
-        } else {
-            window.addEventListener('DOMContentLoaded', initializeApp);
-        }
-    </script>
-</body>
-</html>
