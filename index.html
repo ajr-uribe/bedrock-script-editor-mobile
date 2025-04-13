@@ -413,7 +413,7 @@ gametest.register("TestSuite", "simpleTest", simpleTest)
             isInstalled = false;
             
             // Mostrar sugerencia de instalación después de 30s de uso
-            setTimeout(() => {
+            function InstallApp() {
                 if (!isInstalled && deferredPrompt) {
                     const install = confirm('Install MCBE Script Editor as an app for better experience?');
                     if (install) {
@@ -426,7 +426,7 @@ gametest.register("TestSuite", "simpleTest", simpleTest)
                         });
                     }
                 }
-            }, 30000);
+            }
         });
 
         window.addEventListener('appinstalled', () => {
