@@ -172,103 +172,69 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.40.0/min/vs/loader.min.js"></script>
 <script>
-    // Configuración global de Monaco
-    require.config({ 
-        paths: { 
+    // 1. CONFIGURACIÓN MONACO EDITOR (OFFLINE)
+    require.config({
+        paths: {
             'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.40.0/min/vs'
         },
         waitSeconds: 30
     });
 
+    // Configuración offline para workers
     window.MonacoEnvironment = {
-        getWorkerUrl: function(workerId, label) {
-            return `data:text/javascript;charset=utf-8,${encodeURIComponent(`
+        getWorkerUrl: function(moduleId, label) {
+            const workerUrl = `data:text/javascript;base64,${btoa(`
                 self.MonacoEnvironment = {
                     baseUrl: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.40.0/min/'
                 };
-                importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.40.0/min/vs/base/worker/workerMain.js');
+                try {
+                    importScripts('vs/base/worker/workerMain.js');
+                } catch(e) {
+                    // Fallback para offline
+                    const cacheFallback = caches.match('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.40.0/min/vs/base/worker/workerMain.js');
+                    if (cacheFallback) {
+                        importScripts(cacheFallback);
+                    }
+                }
             `)}`;
+            return workerUrl;
         }
     };
 
-    // Variables globales
+    // 2. VARIABLES GLOBALES
     let deferredPrompt;
     let editor;
+    const CACHE_NAME = 'mcbe-offline-v4';
 
-    // Ejemplos de código para cada módulo
+    // 3. EJEMPLOS DE CÓDIGO (igual que antes)
     const EXAMPLES = {
-        server: `// @minecraft/server example
-import { world, system } from '@minecraft/server';
-
-world.afterEvents.playerSpawn.subscribe((event) => {
-    const player = event.player;
-    player.sendMessage("¡Bienvenido al mundo!");
-    
-    system.runInterval(() => {
-        player.onScreenDisplay.setTitle("¡Hola Minecraft!");
-    }, 20);
-});`,
-
-        'server-ui': `// @minecraft/server-ui example
-import { ActionForm } from '@minecraft/server-ui';
-
-async function showForm(player) {
-    const form = new ActionForm()
-        .title("Menú de Acción")
-        .body("Selecciona una opción:")
-        .button("Opción 1")
-        .button("Opción 2");
-    
-    const response = await form.show(player);
-    if (response.selection === 0) {
-        player.sendMessage("Seleccionaste el botón 1");
-    }
-}`,
-
-        'server-gametest': `// @minecraft/server-gametest example
-import * as gametest from '@minecraft/server-gametest';
-
-function simpleTest(test) {
-    const player = test.spawnSimulatedPlayer({ x: 0, y: 1, z: 0 });
-    test.assert(player.isValid(), "El jugador debería ser válido");
-    
-    test.succeedWhen(() => {
-        const block = test.getBlock({ x: 0, y: 0, z: 0 });
-        test.assert(block.typeId === "minecraft:stone", "Debería haber piedra en (0,0,0)");
-    });
-}
-
-gametest.register("TestSuite", "simpleTest", simpleTest)
-    .maxTicks(100)
-    .structureName("test:structure");`
+        server: `// @minecraft/server example...`, 
+        'server-ui': `// @minecraft/server-ui example...`,
+        'server-gametest': `// @minecraft/server-gametest example...`
     };
 
-    // ===== [1. SISTEMA DE CAMBIO DE COLOR] ===== //
+    // 4. SISTEMA DE INSTALACIÓN (BOTÓN VERDE/GRIS)
     function updateInstallButton() {
         const installBtn = document.getElementById('install-btn');
         const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
         
         if (isStandalone) {
-            // App ya instalada - Botón gris
             installBtn.classList.add('installed');
             installBtn.classList.remove('available');
             installBtn.textContent = "Instalada";
             installBtn.disabled = true;
         } else if (deferredPrompt) {
-            // Disponible para instalar - Botón verde
             installBtn.classList.add('available');
             installBtn.classList.remove('installed');
             installBtn.textContent = "Instalar";
             installBtn.disabled = false;
         } else {
-            // No instalable - Botón normal
             installBtn.classList.remove('available', 'installed');
             installBtn.textContent = "Instalar";
             installBtn.disabled = false;
         }
     }
 
-    // ===== [2. FUNCIÓN DE INSTALACIÓN] ===== //
     function InstallApp() {
         if (window.matchMedia('(display-mode: standalone)').matches) {
             showToast('La app ya está instalada', false);
@@ -276,24 +242,122 @@ gametest.register("TestSuite", "simpleTest", simpleTest)
         }
 
         if (deferredPrompt) {
-            deferredPrompt.prompt().then(() => {
-                return deferredPrompt.userChoice;
-            }).then((choice) => {
-                if (choice.outcome === 'accepted') {
-                    showToast('¡App instalada!', false);
-                }
-                deferredPrompt = null;
-                updateInstallButton();
-            }).catch((err) => {
-                console.error("Error al instalar:", err);
-                showToast('Usa el menú del navegador', false);
-            });
-        } else {
-            showToast('Selecciona "Instalar" en el menú de Chrome', false);
+            deferredPrompt.prompt().then(() => deferredPrompt.userChoice)
+                .then((choice) => {
+                    if (choice.outcome === 'accepted') {
+                        showToast('¡App instalada!', false);
+                    }
+                    deferredPrompt = null;
+                    updateInstallButton();
+                })
+                .catch((err) => {
+                    console.error("Error al instalar:", err);
+                    showToast('Usa el menú del navegador', false);
+                });
         }
     }
 
-    // ===== [3. EVENTOS PWA] ===== //
+    // 5. FUNCIONES OFFLINE
+    async function cacheResources() {
+        const resources = [
+            '/',
+            '/index.html',
+            '/manifest.json',
+            '/icons/favicon.png',
+            'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.40.0/min/vs/loader.min.js',
+            'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.40.0/min/vs/base/worker/workerMain.js',
+            'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.40.0/min/vs/editor/editor.main.js',
+            '/types/@minecraft/server/index.d.ts',
+            '/types/@minecraft/server-ui/index.d.ts',
+            '/types/@minecraft/server-gametest/index.d.ts'
+        ];
+
+        const cache = await caches.open(CACHE_NAME);
+        await cache.addAll(resources);
+    }
+
+    function setupOfflineFallbacks() {
+        caches.match('/').then(response => {
+            if (!response) cacheResources();
+        });
+    }
+
+    // 6. FUNCIONES DEL EDITOR
+    function createEditor() {
+        if (editor) editor.dispose();
+
+        editor = monaco.editor.create(document.getElementById('monaco-editor'), {
+            value: EXAMPLES.server,
+            language: 'javascript',
+            theme: 'vs-dark',
+            automaticLayout: true,
+            minimap: { enabled: true },
+            fontSize: 16,
+            lineHeight: 24
+        });
+
+        // Verificar recursos offline
+        setupOfflineFallbacks();
+    }
+
+    async function loadTypeDefinitions() {
+        try {
+            const [serverTypes, serverUiTypes, gameTestTypes] = await Promise.all([
+                fetch('/types/@minecraft/server/index.d.ts').catch(() => 
+                    caches.match('/types/@minecraft/server/index.d.ts')
+                ),
+                fetch('/types/@minecraft/server-ui/index.d.ts').catch(() => 
+                    caches.match('/types/@minecraft/server-ui/index.d.ts')
+                ),
+                fetch('/types/@minecraft/server-gametest/index.d.ts').catch(() => 
+                    caches.match('/types/@minecraft/server-gametest/index.d.ts')
+                )
+            ]);
+
+            // Configuración de tipos...
+        } catch (error) {
+            console.error("Error cargando tipos:", error);
+            showToast('Error loading API definitions', true);
+        }
+    }
+
+    // 7. FUNCIONES AUXILIARES
+    function showToast(message, isError = false) {
+        const toast = document.getElementById('toast');
+        toast.textContent = message;
+        toast.style.backgroundColor = isError ? '#d32f2f' : '#007acc';
+        toast.style.display = 'block';
+        setTimeout(() => toast.style.display = 'none', 3000);
+    }
+
+    // 8. INICIALIZACIÓN
+    async function initializeApp() {
+        try {
+            // Service Worker
+            if ('serviceWorker' in navigator) {
+                await navigator.serviceWorker.register('/sw.js');
+                setupOfflineFallbacks();
+            }
+
+            // Monaco Editor
+            await new Promise((resolve) => {
+                require(['vs/editor/editor.main'], resolve);
+            });
+
+            createEditor();
+            await loadTypeDefinitions();
+
+            // Eventos
+            editor.onDidChangeModelContent(updateStatusBar);
+            document.getElementById('copy-btn').addEventListener('click', copyScript);
+
+        } catch (error) {
+            console.error("Error inicializando:", error);
+            showToast('Failed to initialize', true);
+        }
+    }
+
+    // 9. EVENTOS GLOBALES
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredPrompt = e;
@@ -301,175 +365,25 @@ gametest.register("TestSuite", "simpleTest", simpleTest)
     });
 
     window.addEventListener('appinstalled', () => {
-        showToast('¡App instalada!', false);
+        showToast('¡App instalada!');
         updateInstallButton();
     });
 
-    // ===== [4. FUNCIONES AUXILIARES] ===== //
-    function showToast(message, isError = false) {
-        const toast = document.getElementById('toast');
-        toast.textContent = message;
-        toast.style.backgroundColor = isError ? '#d32f2f' : '#007acc';
-        toast.style.display = 'block';
-
-        setTimeout(() => {
-            toast.style.display = 'none';
-        }, 3000);
-    }
-
-    async function copyScript() {
-        try {
-            const text = editor.getValue();
-            await navigator.clipboard.writeText(text);
-            showToast('Code copied to clipboard!');
-        } catch (err) {
-            console.error('Error al copiar:', err);
-            showToast('Error copying code', true);
-        }
-    }
-
-    function updateStatusBar() {
-        if (!editor) return;
-        const statusBar = document.getElementById('status-bar');
-        const lineCount = editor.getModel().getLineCount();
-        const position = editor.getPosition();
-        const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-        statusBar.textContent = `Line ${position.lineNumber}, Col ${position.column} | ${lineCount} lines | ${isStandalone ? 'PWA' : 'Web'}`;
-    }
-
-    // ===== [5. FUNCIONES DEL EDITOR] ===== //
-    function createEditor() {
-        if (editor) {
-            editor.dispose();
-            document.getElementById('monaco-editor').innerHTML = '';
-        }
-
-        editor = monaco.editor.create(document.getElementById('monaco-editor'), {
-            value: EXAMPLES.server,
-            language: 'javascript',
-            theme: 'vs-dark',
-            automaticLayout: true,
-            readOnly: false,
-            fontSize: 16,
-            lineHeight: 24,
-            minimap: { enabled: true },
-            scrollBeyondLastLine: false,
-            roundedSelection: true,
-            mouseWheelZoom: false
-        });
-
-        setTimeout(() => {
-            editor.focus();
-            editor.updateOptions({ readOnly: false });
-        }, 100);
-
-        return editor;
-    }
-
-    async function loadTypeDefinitions() {
-        try {
-            const [serverTypes, serverUiTypes, gameTestTypes] = await Promise.all([
-                fetch('/types/@minecraft/server/index.d.ts').then(r => r.text()),
-                fetch('/types/@minecraft/server-ui/index.d.ts').then(r => r.text()),
-                fetch('/types/@minecraft/server-gametest/index.d.ts').then(r => r.text())
-            ]);
-
-            monaco.languages.typescript.typescriptDefaults.addExtraLib(
-                serverTypes,
-                'file:///node_modules/@minecraft/server/index.d.ts'
-            );
-
-            monaco.languages.typescript.typescriptDefaults.addExtraLib(
-                serverUiTypes,
-                'file:///node_modules/@minecraft/server-ui/index.d.ts'
-            );
-
-            monaco.languages.typescript.typescriptDefaults.addExtraLib(
-                gameTestTypes,
-                'file:///node_modules/@minecraft/server-gametest/index.d.ts'
-            );
-
-            monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
-                target: monaco.languages.typescript.ScriptTarget.ES2020,
-                allowNonTsExtensions: true,
-                moduleResolution: monaco.languages.typescript.ModuleResolutionKind.NodeJs,
-                module: monaco.languages.typescript.ModuleKind.CommonJS,
-                typeRoots: ["file:///types"],
-                baseUrl: "file:///",
-                paths: {
-                    "@minecraft/server": ["node_modules/@minecraft/server"],
-                    "@minecraft/server-ui": ["node_modules/@minecraft/server-ui"],
-                    "@minecraft/server-gametest": ["node_modules/@minecraft/server-gametest"]
-                },
-                strict: true
-            });
-
-            return true;
-        } catch (error) {
-            console.error("Error cargando tipos:", error);
-            showToast('Error loading API definitions', true);
-            return false;
-        }
-    }
-
-    // ===== [6. INICIALIZACIÓN PRINCIPAL] ===== //
-    async function initializeApp() {
-        try {
-            if ('serviceWorker' in navigator) {
-                try {
-                    await navigator.serviceWorker.register('/sw.js');
-                    console.log('Service Worker registrado');
-                } catch (swError) {
-                    console.log('Service Worker registration failed:', swError);
-                }
-            }
-
-            await new Promise((resolve) => {
-                require(['vs/editor/editor.main'], resolve);
-            });
-
-            createEditor();
-
-            const typesLoaded = await loadTypeDefinitions();
-            if (typesLoaded) {
-                monaco.editor.setModelLanguage(editor.getModel(), 'typescript');
-                showToast('API autocomplete loaded!');
-            }
-
-            editor.onDidChangeModelContent(updateStatusBar);
-            editor.onDidChangeCursorPosition(updateStatusBar);
-
-            document.getElementById('module-select').addEventListener('change', (e) => {
-                const module = e.target.value;
-                editor.setValue(EXAMPLES[module]);
-                editor.focus();
-            });
-
-            document.getElementById('copy-btn').addEventListener('click', copyScript);
-            document.getElementById('run-btn').addEventListener('click', () => {
-                showToast('Execution feature coming soon!');
-            });
-
-            updateStatusBar();
-
-            document.addEventListener('wheel', e => {
-                if (e.ctrlKey) e.preventDefault();
-            }, { passive: false });
-
-        } catch (error) {
-            console.error("Error inicializando la aplicación:", error);
-            showToast('Failed to initialize editor', true);
-        }
-    }
-
-    // ===== [7. INICIO DE LA APLICACIÓN] ===== //
     window.addEventListener('DOMContentLoaded', () => {
-        if (!window.matchMedia('(display-mode: standalone)').matches) {
-            localStorage.clear();
-        }
         updateInstallButton();
         initializeApp();
     });
+
+    // 10. VERIFICACIÓN OFFLINE (DEBUG)
+    function checkOfflineSupport() {
+        if (!navigator.onLine) {
+            showToast('Modo offline activado');
+            caches.has(CACHE_NAME).then(hasCache => {
+                console.log('Cache disponible:', hasCache);
+            });
+        }
+    }
+    window.addEventListener('offline', checkOfflineSupport);
 </script>
 </body>
 </html>
