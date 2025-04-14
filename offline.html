@@ -17,11 +17,20 @@
             padding: 10px 20px;
             cursor: pointer;
         }
+        #offline-text {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+        }
     </style>
 </head>
 <body>
-    <h1>Estás trabajando offline</h1>
-    <p>Algunas funciones pueden no estar disponibles</p>
+    <div id="offline-text">
+    <h1 class="titulo-offline">Estás trabajando offline</h1>
+    <p class="alerta-offline">Algunas funciones pueden no estar disponibles</p>
     <button onclick="window.location.reload()">Reintentar conexión</button>
+    </div>
 </body>
 </html>
