@@ -181,9 +181,9 @@ gametest.register("MobTests", "simpleMobTest", simpleMobTest)
                 module: monaco.languages.typescript.ModuleKind.ES2015,
                 typeRoots: ["file:///types"],
                 paths: {
-                    "@minecraft/server": ["node_modules/@minecraft/server"],
-                    "@minecraft/server-ui": ["node_modules/@minecraft/server-ui"],
-                    "@minecraft/server-gametest": ["node_modules/@minecraft/server-gametest"]
+                    "@minecraft/server": ["@minecraft/server"],
+                    "@minecraft/server-ui": ["@minecraft/server-ui"],
+                    "@minecraft/server-gametest": ["@minecraft/server-gametest"]
                 },
                 strict: true
             });
