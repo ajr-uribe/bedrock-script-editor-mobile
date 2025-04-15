@@ -29,9 +29,8 @@ h1 {
   z-index: 1;
   top: 50px;
   flex-wrap: wrap;
-  transition: height 0.3s ease; 
+  transition: height 0.5s ease; 
 }
-
 #header.min-toolbar {
   height: 50px;
   overflow-y: hidden;
