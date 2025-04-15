@@ -309,9 +309,8 @@ window.addEventListener('resize', adjustEditorHeightForMobilePWA);
 function adjustEditorHeightForMobilePWA() {
     const editorElement = document.getElementById('app');
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     
-    if (isStandalone && isMobile) {
+    if (isStandalone) {
         editorElement.style.height = '100vh';
     } else {
         editorElement.style.height = '95vh'; // Mantener el valor por defecto
