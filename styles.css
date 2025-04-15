@@ -19,8 +19,8 @@
         #app {
             display: flex;
             flex-direction: column;
-            height: 95vh;
-            width: 95vw;
+            height: 93vh;
+            width: 93vw;
         }
         #header {
             padding: 15px;
