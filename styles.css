@@ -27,6 +27,7 @@ h1 {
   border-bottom: 1px solid #333;
   position: relative;
   z-index: 2;
+  top: 80px;
   flex-wrap: wrap;
 }
 #toolbar {
@@ -34,7 +35,7 @@ h1 {
   padding: 10px;
   display: flex;
   align-items: center;
-  margin-top: 80px;
+  margin-top: 10px;
   flex-wrap: wrap;
   gap: 15px;
 }
