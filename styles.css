@@ -27,7 +27,7 @@ h1 {
   border-bottom: 1px solid #333;
   position: relative;
   z-index: 2;
-  top: 80px;
+  top: 50px;
   flex-wrap: wrap;
 }
 #toolbar {
