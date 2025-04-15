@@ -280,7 +280,7 @@ window.addEventListener('resize', adjustEditorHeightForMobilePWA);
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     
-    statusBar.textContent = `Line ${position.lineNumber}, Col ${position.column} | ${lineCount} lines | ${isStandalone ? 'App' : 'Web'} ${isMobile ? '| Mobile' : 'Desktop'}`;
+    statusBar.textContent = `Line ${position.lineNumber}, Col ${position.column} | ${lineCount} lines | ${isStandalone ? 'App' : 'Web'} ${isMobile ? '| Mobile' : '| Desktop'}`;
 }
 
     function showToast(message, isError = false) {
@@ -312,9 +312,7 @@ function adjustEditorHeightForMobilePWA() {
     
     if (isStandalone) {
         editorElement.style.height = '100vh';
-    } else {
-        editorElement.style.height = '95vh'; // Mantener el valor por defecto
-    }
+    } 
 }
 
     // ===== INICIALIZACIÓN =====
