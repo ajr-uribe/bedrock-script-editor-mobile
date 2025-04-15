@@ -2,7 +2,6 @@
     const APP_VERSION = '2.1.0';
     let editor;
     let deferredPrompt;
-    const savedContent = localStorage.getItem('editorContent');
 
     // Ejemplos de código
     const EXAMPLES = {
@@ -119,21 +118,10 @@ window.addEventListener('resize', adjustEditorHeightForMobilePWA);
             require(['vs/editor/editor.main'], resolve);
         });
     }
-    const editorVal = {
-      saved: savedContent,
-      normal: EXAMPLES
-    }
-    let selectedValue = []
-    function editorValue () {
-      if(savedContent) {
-       selectedValue = editorVal.saved;
-      } else {
-        selectedValue = editorVal.normal;
-      }
-    }
+
     function createEditor() {
         return monaco.editor.create(document.getElementById('monaco-editor'), {
-            value: selectedValue,
+            value: EXAMPLES.server,
             language: 'javascript',
             theme: 'vs-dark',
             automaticLayout: true,
@@ -147,12 +135,13 @@ window.addEventListener('resize', adjustEditorHeightForMobilePWA);
     if (!editor) return;
 
     // Guarda el contenido del editor automáticamente en localStorage
-    editor.onDidChangeCursorPosition(() => {
+    editor.onDidChangeModelContent(() => {
         const content = editor.getValue();
         localStorage.setItem('editorContent', content);
     });
 
     // Carga el contenido guardado de localStorage (si existe)
+    const savedContent = localStorage.getItem('editorContent');
     if (savedContent) {
         editor.setValue(savedContent);
     }
