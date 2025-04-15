@@ -26,7 +26,7 @@ h1 {
   background: #252526;
   border-bottom: 1px solid #333;
   position: relative;
-  z-index: 2;
+  z-index: 1;
   top: 50px;
   flex-wrap: wrap;
   transition: transform 0.3s ease; 
@@ -36,7 +36,7 @@ h1 {
   transform: translateY(calc(-100% - 50px)); 
 }
 #header.min-toolbar + #editor-container {
-  margin-top: auto;
+  margin-top: -100vh;
   transition: margin-top 0.3s ease;
 }
 
