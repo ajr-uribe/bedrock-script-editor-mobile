@@ -146,6 +146,17 @@ window.addEventListener('resize', adjustEditorHeightForMobilePWA);
         editor.setValue(savedContent);
     }
 }
+    function resetEditor() {
+    if (!editor) return;
+
+    // Resetear al contenido de ejemplo
+    editor.setValue(EXAMPLES.server);
+
+    // Limpiar localStorage
+    localStorage.removeItem('editorContent');
+
+    showToast('Editor reseteado a los valores predeterminados.');
+}
     // ===== CARGA DE TIPOS =====
     async function loadTypeDefinitions() {
         try {
