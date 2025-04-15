@@ -39,9 +39,8 @@ h1 {
   flex-wrap: wrap;
   gap: 15px;
 }
-#toolbar .min-toolbar {
-  height: 50px;
-  white-space: nowrap;
+#toolbar + .min-toolbar {
+  transform: translateY(-100%);
 }
 select, button {
   padding: 5px 10px;
