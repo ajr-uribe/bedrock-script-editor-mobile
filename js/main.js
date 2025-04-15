@@ -282,7 +282,7 @@ window.addEventListener('resize', adjustEditorHeightForMobilePWA);
     statusBar.textContent = `Line ${position.lineNumber}, Col ${position.column} | ${lineCount} lines | ${isStandalone ? 'App' : 'Web'} ${isMobile ? '| Mobile' : '| Desktop'}`;
 }
 
-    function showToast(message, isError = false) {
+    function showToast(message, isError = false, time = 3000) {
         const toast = document.getElementById('toast');
         if (!toast) return;
         
@@ -290,7 +290,7 @@ window.addEventListener('resize', adjustEditorHeightForMobilePWA);
         toast.style.backgroundColor = isError ? '#d32f2f' : '#007acc';
         toast.style.display = 'block';
         
-        setTimeout(() => toast.style.display = 'none', 3000);
+        setTimeout(() => toast.style.display = 'none', time);
     }
 
     function showError(title, error) {
@@ -347,7 +347,7 @@ function adjustEditorHeightForMobilePWA() {
             throw new Error("Error de prueba");
         }
         
-        showToast(randomSoon, false);
+        showToast(randomSoon, false, 5000);
     } catch(error) {
         console.error(`${randomError}:`, error);
         
@@ -355,7 +355,7 @@ function adjustEditorHeightForMobilePWA() {
             showToast(`
 ${randomError}:`, true);
         } else {
-            showToast(`${randomError} (Press F12 to see details):`, true);
+            showToast(`${randomError} (Press F12 to see details):`, true, 5000);
         }
     }
 }
