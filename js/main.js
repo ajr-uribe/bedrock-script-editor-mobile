@@ -77,15 +77,14 @@ gametest.register("TestSuite", "simpleTest", simpleTest)
                  editor.onDidChangeCursorPosition(updateStatusBar);
             //8. Actualizar a móvil:
 
-            
-
 // Llamar a la función al inicializar
 adjustEditorHeightForMobilePWA();
 
 // Escuchar cambios en la orientación/resize
 window.addEventListener('resize', adjustEditorHeightForMobilePWA);
 
-            //9. notificaciones toast
+            //9. Notificación de editor iniciado
+
             showToast('Editor listo', false);
         } catch (error) {
             console.error('Error inicializando app:', error);
@@ -314,6 +313,13 @@ function adjustEditorHeightForMobilePWA() {
         editorElement.style.height = '100vh';
     } 
 }
+
+    function executeAction() {
+        showToast('Execute Function Coming Soon', false);
+    } catch(error) {
+        console.error('Error al ejecutar:', error);
+        showError('Error on execute:', error);
+    }
 
     // ===== INICIALIZACIÓN =====
     document.addEventListener('DOMContentLoaded', initializeApp);
