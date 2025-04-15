@@ -73,8 +73,9 @@ button:disabled {
 }
 .status-bar {
   padding: 5px 15px;
-  background: #007acc;
+  background: #699e68;
   font-size: 12px;
+  font-weight: bold;
 }
 .toast {
   position: fixed;
