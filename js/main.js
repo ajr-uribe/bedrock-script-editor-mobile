@@ -379,7 +379,7 @@ async function downloadCode() {
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     
-    statusBar.textContent = `Line ${position.lineNumber}, Col ${position.column} | ${lineCount} lines | ${isStandalone ? 'App' : 'Web'} ${isMobile ? '| Mobile' : '| Desktop'} '| V:${APP_VERSION}`;
+    statusBar.textContent = `Line ${position.lineNumber}, Col ${position.column} | ${lineCount} lines | ${isStandalone ? 'App' : 'Web'} ${isMobile ? '| Mobile' : '| Desktop'} | V : ${APP_VERSION}`;
 }
 
     function showToast(message, isError = false, time = 3000) {
