@@ -34,15 +34,11 @@ h1 {
 
 #header.min-toolbar {
   height: 50px;
+  overflow-y: hidden;
 }
 #header.min-toolbar + #toolbar{
   display: none;
 }
-#header.min-toolbar + #editor-container {
-  margin-top: 0;
-  transition: margin-top 0.3s ease;
-}
-
 #toolbar {
   height: auto;
   padding: 10px;
