@@ -244,8 +244,8 @@ window.addEventListener('resize', adjustEditorHeightForMobilePWA);
 
         document.getElementById('copy-btn').addEventListener('click', copyScript);
         document.getElementById('install-btn').addEventListener('click', installApp);
+    setUpDownloadButton();
     }
-
     function installApp() {
         if (deferredPrompt) {
             deferredPrompt.prompt();
@@ -350,11 +350,8 @@ function getPrefixedMessage(type) {
 }
 
 // Implementación en executeAction
-function executeAction(valor = 1) {
+function executeAction() {
     try {
-        if (valor === 2) {
-            throw new Error("Error de prueba");
-        }
         
         const message = getPrefixedMessage('soon');
         showToast(message, false, 5000);
@@ -370,6 +367,47 @@ function executeAction(valor = 1) {
             5000
         );
     }
+}
+
+// ===== FUNCIÓN DE DESCARGA =====
+function setupDownloadButton() {
+    const downloadBtn = document.getElementById('download-btn');
+    if (!downloadBtn) return;
+
+    downloadBtn.addEventListener('click', () => {
+        try {
+            // Obtener el contenido del editor
+            const codeContent = editor.getValue();
+            
+            // Obtener el nombre del archivo
+            let fileName = document.getElementById('filename-input').value.trim();
+            
+            // Validar y formatear el nombre
+            fileName = fileName.replace(/[^a-z0-9\-_]/gi, '_').toLowerCase();
+            if (!fileName) fileName = 'script';
+            
+            // Crear el blob y descargar
+            const blob = new Blob([codeContent], { type: 'application/javascript' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${fileName}.js`;
+            
+            document.body.appendChild(a);
+            a.click();
+            
+            // Limpieza
+            setTimeout(() => {
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }, 100);
+            
+            showToast('Archivo descargado');
+        } catch (error) {
+            console.error('Error al descargar:', error);
+            showToast('Error al descargar', true);
+        }
+    });
 }
     // ===== INICIALIZACIÓN =====
     document.addEventListener('DOMContentLoaded', initializeApp);
