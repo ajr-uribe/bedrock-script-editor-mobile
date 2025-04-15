@@ -203,6 +203,7 @@ button:disabled {
     border: none;
     overflow: hidden;
     z-index: 1;
+    transition: background 1s ease;
 }
 .min-toolbar-btn:hover{
   background: linear-gradient(to right, yellow, orangered)
