@@ -71,6 +71,10 @@ gametest.register("TestSuite", "simpleTest", simpleTest)
 
             // 6. Configurar controles
             setupControls();
+            
+            // 7. Barra de estado
+            editor.onDidChangeModelContent(updateStatusBar);
+                 editor.onDidChangeCursorPosition(updateStatusBar);
 
             showToast('Editor listo', false);
         } catch (error) {
@@ -255,6 +259,14 @@ gametest.register("TestSuite", "simpleTest", simpleTest)
             console.error('Error copiando:', err);
         }
     }
+
+    function updateStatusBar() {
+             if (!editor) return;
+             const statusBar = document.getElementById('status-bar');
+             const lineCount = editor.getModel().getLineCount();
+             const position = editor.getPosition();
+             statusBar.textContent = `Line ${position.lineNumber}, Col ${position.column} | ${lineCount} lines | ${isInstalled ? 'PWA' : 'Web'}`;
+         }
 
     function showToast(message, isError = false) {
         const toast = document.getElementById('toast');
