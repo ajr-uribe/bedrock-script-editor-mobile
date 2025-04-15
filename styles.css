@@ -144,3 +144,26 @@
     border: none;
     cursor: pointer;
 }
+#filename-input {
+    padding: 8px;
+    border: 1px solid #555;
+    background-color: #2b2b2b;
+    color: #fff;
+    border-radius: 4px;
+    margin-right: 8px;
+    width: 120px;
+}
+
+#download-btn {
+    padding: 8px 12px;
+    background-color: #007acc;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-right: 8px;
+}
+
+#download-btn:hover {
+    background-color: #0062a3;
+}
