@@ -379,11 +379,14 @@ async function downloadCode() {
     // Ajustar altura del editor para PWA móvil
 function adjustEditorHeightForMobilePWA() {
     const editorElement = document.getElementById('app');
+    const viewportHeight = window.innerHeight;
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-    
+
     if (isStandalone) {
-        editorElement.style.height = '100vh';
-    } 
+        editorElement.style.height = `${viewportHeight}px`;
+    } else {
+        editorElement.style.height = 'auto';
+    }
 }
 
     const PREFIX = {
