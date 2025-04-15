@@ -75,7 +75,17 @@ gametest.register("TestSuite", "simpleTest", simpleTest)
             // 7. Barra de estado
             editor.onDidChangeModelContent(updateStatusBar);
                  editor.onDidChangeCursorPosition(updateStatusBar);
+            //8. Actualizar a móvil:
 
+            
+
+// Llamar a la función al inicializar
+adjustEditorHeightForMobilePWA();
+
+// Escuchar cambios en la orientación/resize
+window.addEventListener('resize', adjustEditorHeightForMobilePWA);
+
+            //9. notificaciones toast
             showToast('Editor listo', false);
         } catch (error) {
             console.error('Error inicializando app:', error);
@@ -261,12 +271,17 @@ gametest.register("TestSuite", "simpleTest", simpleTest)
     }
 
     function updateStatusBar() {
-             if (!editor) return;
-             const statusBar = document.getElementById('status-bar');
-             const lineCount = editor.getModel().getLineCount();
-             const position = editor.getPosition();
-             statusBar.textContent = `Line ${position.lineNumber}, Col ${position.column} | ${lineCount} lines | ${isInstalled ? 'PWA' : 'Web'}`;
-         }
+    if (!editor) return;
+    const statusBar = document.getElementById('status-bar');
+    if (!statusBar) return;
+    
+    const lineCount = editor.getModel().getLineCount();
+    const position = editor.getPosition();
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    statusBar.textContent = `Line ${position.lineNumber}, Col ${position.column} | ${lineCount} lines | ${isStandalone ? 'PWA' : 'Web'} ${isMobile ? '| Mobile' : ''}`;
+}
 
     function showToast(message, isError = false) {
         const toast = document.getElementById('toast');
@@ -289,6 +304,19 @@ gametest.register("TestSuite", "simpleTest", simpleTest)
             </div>
         `;
     }
+
+    // Ajustar altura del editor para PWA móvil
+function adjustEditorHeightForMobilePWA() {
+    const editorElement = document.getElementById('monaco-editor');
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    if (isStandalone && isMobile) {
+        editorElement.style.height = '100vh';
+    } else {
+        editorElement.style.height = '95vh'; // Mantener el valor por defecto
+    }
+}
 
     // ===== INICIALIZACIÓN =====
     document.addEventListener('DOMContentLoaded', initializeApp);
