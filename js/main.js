@@ -131,6 +131,21 @@ window.addEventListener('resize', adjustEditorHeightForMobilePWA);
         });
     }
 
+    function setupAutoSave() {
+    if (!editor) return;
+
+    // Guarda el contenido del editor automáticamente en localStorage
+    editor.onDidChangeModelContent(() => {
+        const content = editor.getValue();
+        localStorage.setItem('editorContent', content);
+    });
+
+    // Carga el contenido guardado de localStorage (si existe)
+    const savedContent = localStorage.getItem('editorContent');
+    if (savedContent) {
+        editor.setValue(savedContent);
+    }
+}
     // ===== CARGA DE TIPOS =====
     async function loadTypeDefinitions() {
         try {
