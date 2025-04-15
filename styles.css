@@ -40,7 +40,7 @@ h1 {
   display: none;
 }
 #header.min-toolbar + #editor-container {
-  margin-top: 100px;
+  margin-top: 80px;
   transition: margin-top 0.3s ease;
 }
 #toolbar {
@@ -72,6 +72,7 @@ button:disabled {
 }
 #editor-container {
   flex: 1;
+  margin-top: 150px;
   position: relative;
   min-height: 300px;
 }
