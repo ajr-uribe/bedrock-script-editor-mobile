@@ -29,14 +29,17 @@ h1 {
   z-index: 1;
   top: 50px;
   flex-wrap: wrap;
-  transition: transform 0.3s ease; 
+  transition: height 0.3s ease; 
 }
 
 #header.min-toolbar {
-  transform: translateY(calc(-100% - 50px)); 
+  height: 50px;
+}
+#header.min-toolbar + #toolbar{
+  display: none;
 }
 #header.min-toolbar + #editor-container {
-  margin-top: -100vh;
+  margin-top: 0;
   transition: margin-top 0.3s ease;
 }
 
@@ -47,7 +50,9 @@ h1 {
   align-items: center;
   margin-top: 10px;
   flex-wrap: wrap;
+  white-space: nowrap;
   gap: 15px;
+  transition: all 0.3s ease;
 } 
 select, button {
   padding: 5px 10px;
