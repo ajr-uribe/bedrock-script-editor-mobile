@@ -271,6 +271,8 @@ window.addEventListener('resize', adjustEditorHeightForMobilePWA);
         });
         document.getElementById('copy-btn').addEventListener('click', copyScript);
         document.getElementById('install-btn').addEventListener('click', installApp);
+
+document.getElementById('reset-btn').addEventListener('click', resetEditor);
     }
     function installApp() {
         if (deferredPrompt) {
