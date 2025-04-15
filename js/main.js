@@ -413,7 +413,7 @@ function adjustEditorHeightForMobilePWA() {
     if (isStandalone) {
         editorElement.style.height = `${viewportHeight}px`;
     } else {
-        editorElement.style.height = 'auto';
+        editorElement.style.height = '95vh';
     }
 }
 
