@@ -242,7 +242,7 @@ window.addEventListener('resize', adjustEditorHeightForMobilePWA);
             editor.focus();
         });
 
-setUpDownloadButton();
+setupDownloadButton();
         document.getElementById('copy-btn').addEventListener('click', copyScript);
         document.getElementById('install-btn').addEventListener('click', installApp);
     }
@@ -273,8 +273,6 @@ setUpDownloadButton();
 function setupDownloadButton() {
     const downloadBtn = document.getElementById('download-btn');
     if (!downloadBtn) return;
-
-    downloadBtn.addEventListener('click', () => {
         try {
             // Obtener el contenido del editor
             const codeContent = editor.getValue();
@@ -307,7 +305,6 @@ function setupDownloadButton() {
             console.error('Error al descargar:', error);
             showToast('Error al descargar', true);
         }
-    });
 }
 
     function updateStatusBar() {
