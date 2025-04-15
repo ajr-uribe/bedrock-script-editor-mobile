@@ -39,6 +39,10 @@ h1 {
 #header.min-toolbar + #toolbar{
   display: none;
 }
+#header.min-toolbar + #editor-container {
+  margin-top: auto;
+  transition: margin-top 0.3s ease;
+}
 #toolbar {
   height: auto;
   padding: 10px;
