@@ -83,11 +83,7 @@ adjustEditorHeightForMobilePWA();
 // Escuchar cambios en la orientación/resize
 window.addEventListener('resize', adjustEditorHeightForMobilePWA);
 
-            //9. Cargar contenido anterior del editor
-function inicializarEditorConPersistencia() {
-    cargarEstadoEditor(); // Cargar contenido guardado
-    configurarAutoguardado(); // Configurar guardado automático
-}
+            //9. Auto save
 
             //10. Notificación de editor iniciado
 
@@ -273,53 +269,7 @@ function inicializarEditorConPersistencia() {
         }
     }
 
-     //===== GUARDAR CONTENIDO DEL EDITOR =====
-// Guardar estado del editor
-function guardarEstadoEditor() {
-    if (editor) { // Verificar que el editor existe
-        const codigo = editor.getValue();
-        localStorage.setItem('editorContent', codigo);
-        
-        // Opcional: Guardar también la posición del cursor
-        const posicion = editor.getPosition();
-        localStorage.setItem('editorPosition', JSON.stringify(posicion));
-    }
-}
-
-// Cargar estado del editor
-function cargarEstadoEditor() {
-    const codigoGuardado = localStorage.getItem('editorContent');
-    if (codigoGuardado && editor) {
-        editor.setValue(codigoGuardado);
-        
-        // Opcional: Restaurar posición del cursor
-        const posicionGuardada = localStorage.getItem('editorPosition');
-        if (posicionGuardada) {
-            const posicion = JSON.parse(posicionGuardada);
-            editor.setPosition(posicion);
-            editor.revealPositionInCenter(posicion);
-        }
-    }
-}
-
-// Configurar autoguardado
-function configurarAutoguardado() {
-    if (editor) {
-        // Guardar al cambiar contenido
-        editor.onDidChangeModelContent(() => {
-            guardarEstadoEditor();
-        });
-        
-        // Guardar al cambiar posición del cursor (opcional)
-        editor.onDidChangeCursorPosition(() => {
-            guardarEstadoEditor();
-        });
-        
-        // Guardar al salir de la página
-        window.addEventListener('beforeunload', guardarEstadoEditor);
-    }
-}
-
+   
 
     // ===== FUNCIÓN DE DESCARGA MEJORADA =====
 async function downloadCode() {
