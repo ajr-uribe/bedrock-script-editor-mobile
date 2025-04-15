@@ -35,6 +35,10 @@ h1 {
 #header.min-toolbar {
   transform: translateY(calc(-100% - 50px)); 
 }
+#header.min-toolbar + #editor-container {
+  margin-top: -60px;
+  transition: margin-top 0.3s ease;
+}
 
 #toolbar {
   height: auto;
