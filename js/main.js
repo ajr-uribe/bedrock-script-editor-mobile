@@ -241,8 +241,6 @@ window.addEventListener('resize', adjustEditorHeightForMobilePWA);
             editor.setValue(EXAMPLES[module]);
             editor.focus();
         });
-
-setupDownloadButton();
         document.getElementById('copy-btn').addEventListener('click', copyScript);
         document.getElementById('install-btn').addEventListener('click', installApp);
     }
