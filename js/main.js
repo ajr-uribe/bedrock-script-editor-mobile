@@ -343,7 +343,7 @@ function adjustEditorHeightForMobilePWA() {
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
     try {
-        if(valor === 2) {
+        if(valor === 1) {
             throw new Error("Error de prueba");
         }
         
