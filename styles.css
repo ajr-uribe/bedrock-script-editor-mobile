@@ -11,7 +11,6 @@
             touch-action: manipulation;
             -webkit-text-size-adjust: 100%;
             text-size-adjust: 100%;
-            overflow: wrap;
         }
         h1 {
             font-size: 30px;
@@ -28,14 +27,16 @@
             border-bottom: 1px solid #333;
             position: relative;
             z-index: 2;
+            flex-wrap: wrap;
         }
         #toolbar {
             height: auto;
             padding: 10px;
             display: flex;
-            gap: 15px;
             align-items: center;
             margin-top: 10px;
+            flex-wrap: wrap;
+            gap: 15px;
         }
         select, button {
             padding: 5px 10px;
