@@ -270,41 +270,58 @@ setupDownloadButton();
     }
 
     // ===== FUNCIÓN DE DESCARGA =====
-function setupDownloadButton() {
-    const downloadBtn = document.getElementById('download-btn');
-    if (!downloadBtn) return;
-        try {
-            // Obtener el contenido del editor
-            const codeContent = editor.getValue();
-            
-            // Obtener el nombre del archivo
-            let fileName = document.getElementById('filename-input').value.trim();
-            
-            // Validar y formatear el nombre
-            fileName = fileName.replace(/[^a-z0-9\-_]/gi, '_').toLowerCase();
-            if (!fileName) fileName = 'script';
-            
-            // Crear el blob y descargar
-            const blob = new Blob([codeContent], { type: 'application/javascript' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `${fileName}.js`;
-            
-            document.body.appendChild(a);
-            a.click();
-            
-            // Limpieza
-            setTimeout(() => {
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-            }, 100);
-            
-            showToast('Archivo descargado');
-        } catch (error) {
-            console.error('Error al descargar:', error);
-            showToast('Error al descargar', true);
+function downloadCode() {
+    try {
+        // Verificar si el editor está disponible
+        if (!window.editor) {
+            showToast('Editor no disponible', true);
+            return;
         }
+
+        // Obtener el contenido del editor
+        const codeContent = editor.getValue();
+        
+        // Verificar si hay contenido
+        if (!codeContent.trim()) {
+            showToast('El editor está vacío', true);
+            return;
+        }
+        
+        // Obtener el nombre del archivo
+        let fileName = document.getElementById('filename-input').value.trim();
+        
+        // Validar y formatear el nombre
+        fileName = fileName
+            .replace(/[^a-z0-9\-_]/gi, '_') // Reemplazar caracteres inválidos
+            .replace(/^_+|_+$/g, '') // Eliminar _ al inicio/final
+            .replace(/_+/g, '_') // Reemplazar múltiples _ por uno solo
+            .toLowerCase()
+            .substring(0, 50); // Limitar longitud
+        
+        if (!fileName) fileName = 'script';
+        
+        // Crear el blob y descargar
+        const blob = new Blob([codeContent], { type: 'application/javascript' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${fileName}.js`;
+        a.style.display = 'none';
+        
+        document.body.appendChild(a);
+        a.click();
+        
+        // Limpieza
+        setTimeout(() => {
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }, 100);
+        
+        showToast(`Archivo ${fileName}.js descargado`);
+    } catch (error) {
+        console.error('Error al descargar:', error);
+        showToast('Error al descargar', true);
+    }
 }
 
     function updateStatusBar() {
