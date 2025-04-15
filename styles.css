@@ -39,6 +39,10 @@ h1 {
   flex-wrap: wrap;
   gap: 15px;
 }
+#toolbar .min-toolbar {
+  height: 50px;
+  white-space: nowrap;
+}
 select, button {
   padding: 5px 10px;
   background: #333;
