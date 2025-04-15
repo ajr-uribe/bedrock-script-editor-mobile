@@ -307,7 +307,7 @@ window.addEventListener('resize', adjustEditorHeightForMobilePWA);
 
     // Ajustar altura del editor para PWA móvil
 function adjustEditorHeightForMobilePWA() {
-    const editorElement = document.getElementById('monaco-editor');
+    const editorElement = document.getElementById('app');
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     
