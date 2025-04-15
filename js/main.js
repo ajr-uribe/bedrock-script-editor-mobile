@@ -479,9 +479,9 @@ function minToolbar() {
   // Opcional: Cambiar el ícono/texto del botón según el estado
   const minBtn = document.getElementById("min-btn"); // Asegúrate de tener este ID
   if (toolBar.classList.contains("min-toolbar")) {
-    minBtn.textContent = "Maximizar";
+    minBtn.textContent = "🔽 Open Toolbar 🔽";
   } else {
-    minBtn.textContent = "Minimizar";
+    minBtn.textContent = "🔼 Close Toolbar 🔼";
   }
 }
 
