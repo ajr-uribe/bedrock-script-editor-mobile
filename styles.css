@@ -194,7 +194,7 @@ button:disabled {
     padding: 16px 32px;
     font-size: 18px;
     font-weight: bold;
-    background-color: #eb8030;
+    background: background: linear-gradient(to right, orangered, yellow);
     color: white;
     text-transform: uppercase;
     letter-spacing: 1px;
@@ -206,5 +206,5 @@ button:disabled {
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
 }
 .min-toolbar-btn:hover{
-  background: linear-gradient(to right, orangered, gold)
+  background: linear-gradient(to right, yellow, orangered)
 }
