@@ -194,6 +194,7 @@ button:disabled {
     padding: 16px 32px;
     font-size: 18px;
     font-weight: bold;
+    background-color: #eb8030;
     color: white;
     text-transform: uppercase;
     letter-spacing: 1px;
@@ -203,91 +204,7 @@ button:disabled {
     overflow: hidden;
     z-index: 1;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-
-    /* Gradiente animado de fondo */
-    background: linear-gradient(45deg,
-    #ff0000, #ff7300, #fffb00, #48ff00,
-    #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000);
-    background-size: 400%;
-
-    /* Efecto de borde RGB */
-    box-shadow:
-    0 0 5px #ff0000,
-    0 0 10px #00ffd5,
-    0 0 15px #002bff,
-    0 0 20px #7a00ff;
-    animation: borderGlow 4s linear infinite;
-  }
-
-  /* Animación del gradiente de fondo */
-  .min-toolbar-btn:hover {
-    animation:
-    gradientMove 8s linear infinite,
-    borderGlow 4s linear infinite;
-    transform: translateY(-3px);
-  }
-
-  .min-toolbar-btn:active {
-    transform: translateY(1px);
-  }
-
-  /* Texto con efecto brillante */
-  .min-toolbar-btn::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(255, 255, 255, 0.1);
-    z-index: -1;
-    border-radius: 8px;
-  }
-
-  /* Animaciones */
-  @keyframes gradientMove {
-    0% {
-      background-position: 0% 50%;
-    }
-    100% {
-      background-position: 400% 50%;
-    }
-  }
-
-  @keyframes borderGlow {
-    0% {
-      box-shadow:
-      0 0 5px #ff0000,
-      0 0 10px #00ffd5,
-      0 0 15px #002bff,
-      0 0 20px #7a00ff;
-    }
-    25% {
-      box-shadow:
-      0 0 5px #ff00c8,
-      0 0 10px #ff0000,
-      0 0 15px #00ffd5,
-      0 0 20px #002bff;
-    }
-    50% {
-      box-shadow:
-      0 0 5px #7a00ff,
-      0 0 10px #ff00c8,
-      0 0 15px #ff0000,
-      0 0 20px #00ffd5;
-    }
-    75% {
-      box-shadow:
-      0 0 5px #002bff,
-      0 0 10px #7a00ff,
-      0 0 15px #ff00c8,
-      0 0 20px #ff0000;
-    }
-    100% {
-      box-shadow:
-      0 0 5px #00ffd5,
-      0 0 10px #002bff,
-      0 0 15px #7a00ff,
-      0 0 20px #ff00c8;
-    }
-  }
+}
+.min-toolbar-btn:hover{
+  background: linear-gradient(to right, orangered, gold)
+}
