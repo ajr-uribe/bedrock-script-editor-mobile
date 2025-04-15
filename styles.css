@@ -29,7 +29,13 @@ h1 {
   z-index: 2;
   top: 50px;
   flex-wrap: wrap;
+  transition: transform 0.3s ease; 
 }
+
+#header.min-toolbar {
+  transform: translateY(calc(-100% - 50px)); 
+}
+
 #toolbar {
   height: auto;
   padding: 10px;
@@ -38,10 +44,7 @@ h1 {
   margin-top: 10px;
   flex-wrap: wrap;
   gap: 15px;
-}
-#header + .min-toolbar {
-  transform: translateY(-100%);
-}
+} 
 select, button {
   padding: 5px 10px;
   background: #333;
