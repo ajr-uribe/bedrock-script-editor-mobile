@@ -2,6 +2,26 @@
     const APP_VERSION = '2.1.0';
     let editor;
     let deferredPrompt;
+    //Mensajes toast
+        const MESSAGES = {
+            soon: [
+                "Executing Function Soon",
+                "This function is coming soon",
+                "We are working on this function...",
+                "This is not ready yet",
+                "Please wait for this function",
+                "This button isn't working yet",
+                "Sorry for this, we still working on this function"
+            ],
+            error: [
+                "Oops, something went wrong"
+                "Hmmm, there's an error",
+                "Hey, this failed",
+                "Oh sh*t, a problem",
+                "Nuh uh, this failed",
+                "PANIC, PANIC, HERE'S AN ERROR"
+            ]
+        };
 
     // Ejemplos de código
     const EXAMPLES = {
@@ -314,12 +334,34 @@ function adjustEditorHeightForMobilePWA() {
     } 
 }
 
-    function executeAction() {
-        showToast('Execute Function Coming Soon', false);
-    } catch(error) {
-        console.error('Error al ejecutar:', error);
-        showError('Error on execute:', error);
+
+            //Soon/Succes
+            const soonMessage = MESSAGES.soon;
+            const randomSoon = soonMessage[Math.floor(Math.random() * soonMessage.length)];
+
+            //Error
+            const errorMessage = MESSAGES.error;
+            const randomError = errorMessage[Math.floor(Math.random() * errorMessage.length)];
+
+            //Device
+            const device = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+    function executeAction(valor = 1) {
+        try {
+
+    if(valor === 2) {
+        throw new Error("Error de prueba");
     }
+
+        showToast( randomSoon, false);
+    } catch(error) {
+            console.error(randomError, error);
+        if(device) {
+            showToast(randomError, true);
+        } else {
+            showToast(randomError + " (Press F12 to see console):", true);
+    }
+}
 
     // ===== INICIALIZACIÓN =====
     document.addEventListener('DOMContentLoaded', initializeApp);
