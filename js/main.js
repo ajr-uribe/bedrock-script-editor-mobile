@@ -267,58 +267,73 @@ window.addEventListener('resize', adjustEditorHeightForMobilePWA);
         }
     }
 
-    // ===== FUNCIÓN DE DESCARGA =====
-function downloadCode() {
+    // ===== FUNCIÓN DE DESCARGA MEJORADA =====
+async function downloadCode() {
     try {
-        // Verificar si el editor está disponible
-        if (!window.editor) {
-            showToast('Editor no disponible', true);
-            return;
+        // 1. Verificar si el editor está disponible (misma comprobación que copyCode)
+        if (!editor || typeof editor.getValue !== 'function') {
+            throw new Error('Editor no disponible o no inicializado');
         }
 
-        // Obtener el contenido del editor
+        // 2. Obtener contenido del editor (igual que copyCode)
         const codeContent = editor.getValue();
         
-        // Verificar si hay contenido
+        // 3. Validar contenido (añadiendo trim como buena práctica)
         if (!codeContent.trim()) {
             showToast('El editor está vacío', true);
             return;
         }
         
-        // Obtener el nombre del archivo
-        let fileName = document.getElementById('filename-input').value.trim();
+        // 4. Obtener nombre del archivo con validación robusta
+        const fileNameInput = document.getElementById('filename-input');
+        let fileName = fileNameInput ? fileNameInput.value.trim() : 'script';
         
-        // Validar y formatear el nombre
+        // Limpieza del nombre de archivo
         fileName = fileName
             .replace(/[^a-z0-9\-_]/gi, '_') // Reemplazar caracteres inválidos
-            .replace(/^_+|_+$/g, '') // Eliminar _ al inicio/final
-            .replace(/_+/g, '_') // Reemplazar múltiples _ por uno solo
+            .replace(/^_+|_+$/g, '')          // Eliminar _ al inicio/final
+            .replace(/_+/g, '_')             // Reemplazar múltiples _ por uno
             .toLowerCase()
-            .substring(0, 50); // Limitar longitud
+            .substring(0, 50)                // Limitar longitud
+            || 'script';                      // Valor por defecto
         
-        if (!fileName) fileName = 'script';
-        
-        // Crear el blob y descargar
-        const blob = new Blob([codeContent], { type: 'application/javascript' });
+        // 5. Crear y descargar el archivo (con manejo de recursos)
+        const blob = new Blob([codeContent], { type: 'application/javascript;charset=utf-8' });
         const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${fileName}.js`;
-        a.style.display = 'none';
         
-        document.body.appendChild(a);
-        a.click();
+        try {
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${fileName}.js`;
+            a.style.display = 'none';
+            document.body.appendChild(a);
+            a.click();
+            
+            showToast(`Descargado: ${fileName}.js`);
+        } finally {
+            // Limpieza segura incluso si hay errores
+            setTimeout(() => {
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }, 100);
+        }
         
-        // Limpieza
-        setTimeout(() => {
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }, 100);
-        
-        showToast(`Archivo ${fileName}.js descargado`);
     } catch (error) {
-        console.error('Error al descargar:', error);
-        showToast('Error al descargar', true);
+        console.error('Error en downloadCode:', error);
+        showToast('Error on downloading:', true);
+        
+        // Mensaje detallado en consola para desarrollo
+        if (error instanceof Error) {
+            console.error('Detalles del error:', {
+                message: error.message,
+                stack: error.stack,
+                editorState: {
+                    available: !!editor,
+                    hasGetValue: editor && typeof editor.getValue === 'function',
+                    contentLength: editor ? editor.getValue().length : 0
+                }
+            });
+        }
     }
 }
 
