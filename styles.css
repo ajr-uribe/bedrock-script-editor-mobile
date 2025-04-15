@@ -47,7 +47,7 @@
             background: #444;
         }
         button:disabled {
-            opacity: 0.7;
+            display: none;
             cursor: default;
             background: #333 !important;
         }
@@ -121,9 +121,8 @@
                 color: white;
             }
             #install-btn.installed {
-                background-color: #9E9E9E; /* Gris */
                 cursor: default;
-                opacity: 0.5;
+                display: none;
             }
             .error-message {
     padding: 20px;
