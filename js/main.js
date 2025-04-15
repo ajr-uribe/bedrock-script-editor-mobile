@@ -314,49 +314,61 @@ function adjustEditorHeightForMobilePWA() {
     } 
 }
 
-    function executeAction(valor = 1) {
-    const MESSAGES = {
-        soon: [
-            "Executing Function Soon",
-            "This function is coming soon",
-            "We are working on this function...",
-            "This is not ready yet",
-            "Please wait for this function",
-            "This button isn't working yet",
-            "Sorry for this, we still working on this function"
-        ],
-        error: [
-            "Oops, something went wrong",
-            "Hmmm, there's an error",
-            "Hey, this failed",
-            "Oh sh*t, a problem",
-            "Nuh uh, this failed",
-            "PANIC, PANIC, HERE'S AN ERROR"
-        ]
-    };
+    const PREFIX = {
+    soon: ["👨‍💻 ", "🚀 ", "🔧 ", "⏳ "],
+    error: ["⚠️ ", "❌ ", "💥 ", "🔴 "]
+};
 
-    // Obtener mensajes aleatorios
-    const randomSoon = MESSAGES.soon[Math.floor(Math.random() * MESSAGES.soon.length)];
-    const randomError = MESSAGES.error[Math.floor(Math.random() * MESSAGES.error.length)];
-    
-    // Detectar dispositivo
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+function getRandomPrefix(type) {
+    const prefixes = PREFIX[type];
+    return prefixes[Math.floor(Math.random() * prefixes.length)];
+}
 
+const MESSAGES = {
+    soon: [
+        "Executing Function Soon",
+        "This function is coming soon",
+        "We are working on this function...",
+        "This is not ready yet",
+        "Please wait for this function",
+        "This button isn't working yet",
+        "Sorry for this, we still working on this function"
+    ],
+    error: [
+        "Oops, something went wrong",
+        "Hmmm, there's an error",
+        "Hey, this failed",
+        "Oh sh*t, a problem",
+        "Nuh uh, this failed",
+        "PANIC, PANIC, HERE'S AN ERROR"
+    ]
+};
+
+// Función para obtener mensaje con prefijo
+function getPrefixedMessage(type) {
+    return `${getRandomPrefix(type)}${MESSAGES[type][Math.floor(Math.random() * MESSAGES[type].length)]}`;
+}
+
+// Implementación en executeAction
+function executeAction(valor = 1) {
     try {
-        if(valor === 1) {
+        if (valor === 2) {
             throw new Error("Error de prueba");
         }
         
-        showToast(randomSoon, false, 5000);
-    } catch(error) {
-        console.error(`${randomError}:`, error);
+        const message = getPrefixedMessage('soon');
+        showToast(message, false, 5000);
         
-        if(isMobile) {
-            showToast(`
-${randomError}:`, true);
-        } else {
-            showToast(`${randomError} (Press F12 to see details):`, true, 5000);
-        }
+    } catch(error) {
+        const message = getPrefixedMessage('error');
+        console.error(`${message}:`, error);
+        
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        showToast(
+            isMobile ? message : `${message} (Ver consola para detalles)`,
+            true,
+            5000
+        );
     }
 }
     // ===== INICIALIZACIÓN =====
