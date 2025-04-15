@@ -475,6 +475,14 @@ function executeAction() {
 function minToolbar() {
   const toolBar = document.getElementById("header");
   toolBar.classList.toggle("min-toolbar");
+  
+  // Opcional: Cambiar el ícono/texto del botón según el estado
+  const minBtn = document.getElementById("min-btn"); // Asegúrate de tener este ID
+  if (toolBar.classList.contains("min-toolbar")) {
+    minBtn.textContent = "Maximizar";
+  } else {
+    minBtn.textContent = "Minimizar";
+  }
 }
 
     // ===== INICIALIZACIÓN =====
