@@ -27,15 +27,13 @@ h1 {
   border-bottom: 1px solid #333;
   position: relative;
   z-index: 1;
-  top: 50px;
-  flex-wrap: wrap;
-  transition: height 0.5s ease; 
+  margin-top: 50px;
 }
 #header.min-toolbar {
   height: 50px;
-  overflow-y: hidden;
+  overflow: hidden;
 }
-#header.min-toolbar + #toolbar{
+#header.min-toolbar #toolbar {
   display: none;
 }
 #toolbar {
@@ -47,8 +45,7 @@ h1 {
   flex-wrap: wrap;
   white-space: nowrap;
   gap: 15px;
-  transition: all 0.3s ease;
-} 
+}
 select, button {
   padding: 5px 10px;
   background: #333;
@@ -61,13 +58,11 @@ button:hover {
   background: #444;
 }
 button:disabled {
-  display: none;
   cursor: default;
   background: #333 !important;
 }
 #editor-container {
   flex: 1;
-  margin-top: 50px;
   position: relative;
   min-height: 300px;
 }
@@ -102,6 +97,38 @@ button:disabled {
   vertical-align: middle;
   margin-right: 10px;
 }
+.save-status {
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  background: rgba(0, 122, 204, 0.8);
+  color: white;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  display: none;
+  z-index: 1000;
+}
+.min-toolbar-btn {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  padding: 16px 32px;
+  font-size: 18px;
+  font-weight: bold;
+  background: linear-gradient(to right, orangered, yellow);
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  border: none;
+  z-index: 1000;
+}
+.min-toolbar-btn:hover {
+  background: linear-gradient(to right, yellow, orangered);
+}
+
 @media (min-width: 1200px) {
   #header {
     height: auto;
@@ -119,6 +146,7 @@ button:disabled {
     max-height: 90px;
   }
 }
+
 @media (max-width: 660px) {
   #icon {
     max-height: 30px;
@@ -126,7 +154,6 @@ button:disabled {
   h1 {
     font-size: 1.2rem;
   }
-  /* Estilos para el botón de instalación */
   #install-btn {
     position: fixed;
     top: 15px;
@@ -134,32 +161,11 @@ button:disabled {
   }
   #install-btn.available {
     background-color: #4CAF50;
-    /* Verde */
     color: white;
   }
   #install-btn.installed {
     cursor: default;
     display: none;
-  }
-  .error-message {
-    padding: 20px;
-    background: #1e1e1e;
-    color: white;
-    border: 1px solid #d32f2f;
-    margin: 10px;
-  }
-
-  .error-actions {
-    margin-top: 15px;
-  }
-
-  .error-actions button {
-    margin-right: 10px;
-    padding: 5px 10px;
-    background: #007acc;
-    color: white;
-    border: none;
-    cursor: pointer;
   }
   #filename-input {
     padding: 8px;
@@ -170,7 +176,6 @@ button:disabled {
     margin-right: 8px;
     width: 120px;
   }
-
   #download-btn {
     padding: 8px 12px;
     background-color: #007acc;
@@ -180,42 +185,7 @@ button:disabled {
     cursor: pointer;
     margin-right: 8px;
   }
-
   #download-btn:hover {
     background-color: #0062a3;
   }
-
-  .min-toolbar-btn {
-    /* Estilos base */
-    width: 100vw;
-    position: fixed;
-    top: 0;
-    left: 0;
-    padding: 16px 32px;
-    font-size: 18px;
-    font-weight: bold;
-    background: linear-gradient(to right, orangered, yellow);
-    color: white;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    cursor: pointer;
-    border-radius: 10px;
-    border: none;
-    overflow: hidden;
-    z-index: 1;
-}
-.min-toolbar-btn:hover{
-  background: linear-gradient(to right, yellow, orangered)
-}
-.save-status {
-    position: fixed;
-    bottom: 10px;
-    right: 10px;
-    background: rgba(0, 122, 204, 0.8);
-    color: white;
-    padding: 5px 10px;
-    border-radius: 4px;
-    font-size: 12px;
-    display: none;
-    z-index: 1000;
 }
