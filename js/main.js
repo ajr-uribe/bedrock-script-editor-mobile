@@ -9,7 +9,7 @@ let editor;
 let deferredPrompt;
 let saveTimeout;
 
-// Ejemplos de código (solo para referencia, no se cargan automáticamente)
+// Ejemplos de código
 const EXAMPLES = {
     server: `// @minecraft/server example
 import { world, system } from '@minecraft/server';
@@ -160,7 +160,6 @@ function configureMonaco() {
 }
 
 function createEditor() {
-    // Cargar contenido guardado o empezar con editor vacío
     const initialContent = loadSavedState();
     
     const editorInstance = monaco.editor.create(document.getElementById('monaco-editor'), {
@@ -175,9 +174,7 @@ function createEditor() {
         renderWhitespace: 'selection'
     });
 
-    // Establecer foco en el editor
     setTimeout(() => editorInstance.focus(), 300);
-    
     return editorInstance;
 }
 
@@ -250,7 +247,6 @@ function setupAutoSave() {
     
     showStatusMessage('Setting up auto-save...');
     
-    // Guardar inmediatamente al cambiar contenido (con debounce)
     editor.onDidChangeModelContent(() => {
         clearTimeout(saveTimeout);
         saveTimeout = setTimeout(() => {
@@ -258,12 +254,8 @@ function setupAutoSave() {
         }, SAVE_DEBOUNCE_TIME);
     });
     
-    // También guardar periódicamente por si acaso
     setInterval(saveEditorState, AUTO_SAVE_INTERVAL);
-    
-    // Guardar cuando la página se cierre
     window.addEventListener('beforeunload', saveEditorState);
-    
     showStatusMessage('Auto-save configured');
 }
 
@@ -295,7 +287,7 @@ function loadSavedState() {
             document.getElementById('filename-input').value = savedFilename;
         }
         
-        return savedContent || ''; // Devuelve cadena vacía si no hay contenido guardado
+        return savedContent || '';
     } catch (error) {
         console.error('Error loading saved state:', error);
         return '';
@@ -303,7 +295,7 @@ function loadSavedState() {
 }
 
 function flashSaveIndicator() {
-    const indicator = document.getElementById('save-indicator');
+    const indicator = document.getElementById('save-status');
     if (indicator) {
         indicator.style.display = 'block';
         setTimeout(() => {
@@ -368,12 +360,9 @@ function setupControls() {
                 editor.setValue(EXAMPLES[module]);
                 editor.focus();
             } else {
-                // Revert selection
                 e.target.value = moduleSelect.dataset.lastValue || 'server';
             }
         });
-        
-        // Save last selection
         moduleSelect.dataset.lastValue = moduleSelect.value;
     }
     
@@ -382,7 +371,6 @@ function setupControls() {
     document.getElementById('reset-btn')?.addEventListener('click', resetEditor);
     document.getElementById('filename-input')?.addEventListener('change', saveEditorState);
     document.getElementById('download-btn')?.addEventListener('click', downloadCode);
-    document.getElementById('min-btn')?.addEventListener('click', minToolbar);
 }
 
 function setupStatusBar() {
@@ -390,28 +378,22 @@ function setupStatusBar() {
     
     editor.onDidChangeModelContent(() => {
         updateStatusBar();
-        updateLineCount();
     });
     
     editor.onDidChangeCursorPosition(updateStatusBar);
     updateStatusBar();
-    updateLineCount();
 }
 
 function resetEditor() {
     if (!editor) return;
     
     if (confirm('Are you sure you want to reset the editor? All unsaved changes will be lost.')) {
-        // Clear localStorage
         localStorage.removeItem(STORAGE_KEY);
         localStorage.removeItem(STORAGE_FILENAME_KEY);
-        
-        // Reset to empty editor
         editor.setValue('');
         if (document.getElementById('filename-input')) {
             document.getElementById('filename-input').value = 'main';
         }
-        
         showToast('Editor reset. Starting with a clean file.');
     }
 }
@@ -455,7 +437,6 @@ async function downloadCode() {
         const fileNameInput = document.getElementById('filename-input');
         let fileName = fileNameInput ? fileNameInput.value.trim() : 'script';
         
-        // Sanitize filename
         fileName = fileName
             .replace(/[^a-z0-9\-_]/gi, '_')
             .replace(/^_+|_+$/g, '')
@@ -496,13 +477,13 @@ function executeAction() {
 }
 
 function minToolbar() {
-    const toolBar = document.getElementById("header");
+    const header = document.getElementById("header");
     const minBtn = document.getElementById("min-btn");
     
-    if (toolBar && minBtn) {
-        toolBar.classList.toggle("min-toolbar");
+    if (header && minBtn) {
+        header.classList.toggle("min-toolbar");
         
-        if (toolBar.classList.contains("min-toolbar")) {
+        if (header.classList.contains("min-toolbar")) {
             minBtn.textContent = "🔽 Open Toolbar 🔽";
         } else {
             minBtn.textContent = "🔼 Close Toolbar 🔼";
@@ -521,15 +502,6 @@ function updateStatusBar() {
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     
     statusBar.textContent = `Ln ${position.lineNumber}, Col ${position.column} | ${isStandalone ? 'App' : 'Web'} ${isMobile ? '| Mobile' : '| Desktop'} | v${APP_VERSION}`;
-}
-
-function updateLineCount() {
-    if (!editor) return;
-    const lineCountElement = document.getElementById('line-count');
-    if (lineCountElement) {
-        const lineCount = editor.getModel().getLineCount();
-        lineCountElement.textContent = `${lineCount} lines`;
-    }
 }
 
 function showStatusMessage(message) {
@@ -575,17 +547,6 @@ function adjustEditorHeightForMobilePWA() {
     editorElement.style.height = isStandalone ? `${viewportHeight}px` : '93vh';
 }
 
-function getRandomMessage(type) {
-    const prefixes = PREFIX[type] || [''];
-    const messages = MESSAGES[type] || [type];
-    
-    const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
-    const message = messages[Math.floor(Math.random() * messages.length)];
-    
-    return `${prefix}${message}`;
-}
-
-// Helper para mostrar mensajes aleatorios
 function getRandomMessage(type) {
     const prefixes = PREFIX[type] || [''];
     const messages = MESSAGES[type] || [type];
