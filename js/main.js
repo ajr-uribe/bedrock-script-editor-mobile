@@ -1,11 +1,17 @@
-    // ===== CONFIGURACIÓN GLOBAL =====
-    const APP_VERSION = '1.2.0';
-    let editor;
-    let deferredPrompt;
+// ===== CONFIGURACIÓN GLOBAL =====
+const APP_VERSION = '1.2.1';
+const STORAGE_KEY = 'mcbe_editor_content';
+const STORAGE_FILENAME_KEY = 'mcbe_editor_filename';
+const SAVE_DEBOUNCE_TIME = 1000; // 1 segundo
+const AUTO_SAVE_INTERVAL = 30000; // 30 segundos
 
-    // Ejemplos de código
-    const EXAMPLES = {
-        server: `// @minecraft/server example
+let editor;
+let deferredPrompt;
+let saveTimeout;
+
+// Ejemplos de código (solo para referencia, no se cargan automáticamente)
+const EXAMPLES = {
+    server: `// @minecraft/server example
 import { world, system } from '@minecraft/server';
 
 world.afterEvents.playerSpawn.subscribe((event) => {
@@ -17,7 +23,7 @@ world.afterEvents.playerSpawn.subscribe((event) => {
     }, 20);
 });`,
 
-        'server-ui': `// @minecraft/server-ui example
+    'server-ui': `// @minecraft/server-ui example
 import { ActionForm } from '@minecraft/server-ui';
 
 async function showForm(player) {
@@ -33,7 +39,7 @@ async function showForm(player) {
     }
 }`,
 
-        'server-gametest': `// @minecraft/server-gametest example
+    'server-gametest': `// @minecraft/server-gametest example
 import * as gametest from '@minecraft/server-gametest';
 
 function simpleTest(test) {
@@ -49,383 +55,14 @@ function simpleTest(test) {
 gametest.register("TestSuite", "simpleTest", simpleTest)
     .maxTicks(100)
     .structureName("test:structure");`
-    };
-
-    // ===== FUNCIÓN PRINCIPAL =====
-    async function initializeApp() {
-        try {
-            // 1. Registrar Service Worker
-            registerServiceWorker();
-
-            // 2. Configurar Monaco Editor
-            await configureMonaco();
-
-            // 3. Crear editor
-            editor = createEditor();
-
-            // 4. Cargar tipos de Minecraft
-            await loadTypeDefinitions();
-
-            // 5. Configurar PWA
-            setupPWA();
-
-            // 6. Configurar controles
-            setupControls();
-            
-            // 7. Barra de estado
-            editor.onDidChangeModelContent(updateStatusBar);
-                 editor.onDidChangeCursorPosition(updateStatusBar);
-            //8. Actualizar a móvil:
-
-// Llamar a la función al inicializar
-adjustEditorHeightForMobilePWA();
-
-// Escuchar cambios en la orientación/resize
-window.addEventListener('resize', adjustEditorHeightForMobilePWA);
-
-            //9. Auto save
-
-            //10. Notificación de editor iniciado
-
-            showToast('Editor listo', false);
-        } catch (error) {
-            console.error('Error inicializando app:', error);
-            showError('Error al iniciar el editor', error);
-        }
-    }
-
-    // ===== FUNCIONES DE MONACO =====
-    function configureMonaco() {
-        return new Promise((resolve) => {
-            require.config({
-                paths: { 
-                    'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.40.0/min/vs'
-                },
-                waitSeconds: 30
-            });
-
-            window.MonacoEnvironment = {
-                getWorkerUrl: function(moduleId, label) {
-                    return `data:text/javascript;charset=utf-8,${encodeURIComponent(`
-                        self.MonacoEnvironment = {
-                            baseUrl: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.40.0/min/'
-                        };
-                        importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.40.0/min/vs/base/worker/workerMain.js');
-                    `)}`;
-                }
-            };
-
-            require(['vs/editor/editor.main'], resolve);
-        });
-    }
-
-    function createEditor() {
-        return monaco.editor.create(document.getElementById('monaco-editor'), {
-            value: EXAMPLES.server,
-            language: 'javascript',
-            theme: 'vs-dark',
-            automaticLayout: true,
-            minimap: { enabled: true },
-            fontSize: 14,
-            lineHeight: 24
-        });
-    }
-
-    function setupAutoSave() {
-    if (!editor) return;
-
-    // Guarda el contenido del editor automáticamente en localStorage
-    editor.onDidChangeModelContent(() => {
-        const content = editor.getValue();
-        localStorage.setItem('editorContent', content);
-    });
-
-    // Carga el contenido guardado de localStorage (si existe)
-    const savedContent = localStorage.getItem('editorContent');
-    if (savedContent) {
-        editor.setValue(savedContent);
-    }
-}
-    function resetEditor() {
-    if (!editor) return;
-
-    // Resetear al contenido de ejemplo
-    editor.setValue(EXAMPLES.server);
-
-    // Limpiar localStorage
-    localStorage.removeItem('editorContent');
-
-    showToast('Editor reseteado a los valores predeterminados.');
-}
-    // ===== CARGA DE TIPOS =====
-    async function loadTypeDefinitions() {
-        try {
-            const [serverTypes, serverUiTypes, gameTestTypes] = await Promise.all([
-                fetchTypeDefinition('/types/@minecraft/server/index.d.ts'),
-                fetchTypeDefinition('/types/@minecraft/server-ui/index.d.ts'),
-                fetchTypeDefinition('/types/@minecraft/server-gametest/index.d.ts')
-            ]);
-
-            monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
-                target: monaco.languages.typescript.ScriptTarget.ES2020,
-                allowNonTsExtensions: true,
-                moduleResolution: monaco.languages.typescript.ModuleResolutionKind.NodeJs,
-                module: monaco.languages.typescript.ModuleKind.CommonJS,
-                typeRoots: ["file:///types"],
-                baseUrl: "file:///",
-                paths: {
-                    "@minecraft/server": ["node_modules/@minecraft/server"],
-                    "@minecraft/server-ui": ["node_modules/@minecraft/server-ui"],
-                    "@minecraft/server-gametest": ["node_modules/@minecraft/server-gametest"]
-                },
-                strict: true
-            });
-
-            monaco.languages.typescript.typescriptDefaults.addExtraLib(
-                serverTypes,
-                'file:///node_modules/@minecraft/server/index.d.ts'
-            );
-            
-            monaco.languages.typescript.typescriptDefaults.addExtraLib(
-                serverUiTypes,
-                'file:///node_modules/@minecraft/server-ui/index.d.ts'
-            );
-            
-            monaco.languages.typescript.typescriptDefaults.addExtraLib(
-                gameTestTypes,
-                'file:///node_modules/@minecraft/server-gametest/index.d.ts'
-            );
-
-            monaco.editor.setModelLanguage(editor.getModel(), 'typescript');
-            return true;
-        } catch (error) {
-            console.error("Error cargando tipos:", error);
-            showToast('Error loading API definitions', true);
-            return false;
-        }
-    }
-
-    async function fetchTypeDefinition(path) {
-        try {
-            const response = await fetch(path);
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-            return await response.text();
-        } catch (error) {
-            console.error(`Error cargando ${path}:`, error);
-            throw error;
-        }
-    }
-
-    // ===== FUNCIONES PWA =====
-    function registerServiceWorker() {
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/sw.js')
-                .then(reg => console.log('SW registrado:', reg.scope))
-                .catch(err => console.error('Error SW:', err));
-        }
-    }
-
-    function setupPWA() {
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            updateInstallButton();
-        });
-
-        window.addEventListener('appinstalled', () => {
-            deferredPrompt = null;
-            updateInstallButton();
-            showToast('App instalada correctamente');
-        });
-
-        updateInstallButton();
-    }
-
-    function updateInstallButton() {
-        const installBtn = document.getElementById('install-btn');
-        if (!installBtn) return;
-
-        const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-        
-        if (isStandalone) {
-            installBtn.classList.add('installed');
-            installBtn.textContent = "Instalada";
-            installBtn.disabled = true;
-        } else if (deferredPrompt) {
-            installBtn.classList.add('available');
-            installBtn.textContent = "Instalar";
-            installBtn.disabled = false;
-        } else {
-            installBtn.classList.remove('available', 'installed');
-            installBtn.textContent = "Instalar";
-            installBtn.disabled = true;
-        }
-    }
-
-    // ===== FUNCIONES DE INTERFAZ =====
-    function setupControls() {
-        document.getElementById('module-select').addEventListener('change', (e) => {
-            const module = e.target.value;
-            editor.setValue(EXAMPLES[module]);
-            editor.focus();
-        });
-        document.getElementById('copy-btn').addEventListener('click', copyScript);
-        document.getElementById('install-btn').addEventListener('click', installApp);
-
-document.getElementById('reset-btn').addEventListener('click', resetEditor);
-    }
-    function installApp() {
-        if (deferredPrompt) {
-            deferredPrompt.prompt();
-            deferredPrompt.userChoice.then(choice => {
-                if (choice.outcome === 'accepted') {
-                    showToast('Instalación en progreso...');
-                }
-                deferredPrompt = null;
-                updateInstallButton();
-            });
-        }
-    }
-
-    async function copyScript() {
-        try {
-            await navigator.clipboard.writeText(editor.getValue());
-            showToast('Código copiado');
-        } catch (err) {
-            showToast('Error al copiar', true);
-            console.error('Error copiando:', err);
-        }
-    }
-
-   
-
-    // ===== FUNCIÓN DE DESCARGA MEJORADA =====
-async function downloadCode() {
-    try {
-        // 1. Verificar si el editor está disponible (misma comprobación que copyCode)
-        if (!editor || typeof editor.getValue !== 'function') {
-            throw new Error('Editor no disponible o no inicializado');
-        }
-
-        // 2. Obtener contenido del editor (igual que copyCode)
-        const codeContent = editor.getValue();
-        
-        // 3. Validar contenido (añadiendo trim como buena práctica)
-        if (!codeContent.trim()) {
-            showToast('El editor está vacío', true);
-            return;
-        }
-        
-        // 4. Obtener nombre del archivo con validación robusta
-        const fileNameInput = document.getElementById('filename-input');
-        let fileName = fileNameInput ? fileNameInput.value.trim() : 'script';
-        
-        // Limpieza del nombre de archivo
-        fileName = fileName
-            .replace(/[^a-z0-9\-_]/gi, '_') // Reemplazar caracteres inválidos
-            .replace(/^_+|_+$/g, '')          // Eliminar _ al inicio/final
-            .replace(/_+/g, '_')             // Reemplazar múltiples _ por uno
-            .toLowerCase()
-            .substring(0, 50)                // Limitar longitud
-            || 'script';                      // Valor por defecto
-        
-        // 5. Crear y descargar el archivo (con manejo de recursos)
-        const blob = new Blob([codeContent], { type: 'application/javascript;charset=utf-8' });
-        const url = URL.createObjectURL(blob);
-        
-        try {
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `${fileName}.js`;
-            a.style.display = 'none';
-            document.body.appendChild(a);
-            a.click();
-            
-            showToast(`Descargado: ${fileName}.js`);
-        } finally {
-            // Limpieza segura incluso si hay errores
-            setTimeout(() => {
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-            }, 100);
-        }
-        
-    } catch (error) {
-        console.error('Error en downloadCode:', error);
-        showToast('Error on downloading:', true);
-        
-        // Mensaje detallado en consola para desarrollo
-        if (error instanceof Error) {
-            console.error('Detalles del error:', {
-                message: error.message,
-                stack: error.stack,
-                editorState: {
-                    available: !!editor,
-                    hasGetValue: editor && typeof editor.getValue === 'function',
-                    contentLength: editor ? editor.getValue().length : 0
-                }
-            });
-        }
-    }
-}
-
-    function updateStatusBar() {
-    if (!editor) return;
-    const statusBar = document.getElementById('status-bar');
-    if (!statusBar) return;
-    
-    const lineCount = editor.getModel().getLineCount();
-    const position = editor.getPosition();
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    
-    statusBar.textContent = `Line ${position.lineNumber}, Col ${position.column} | ${lineCount} lines | ${isStandalone ? 'App' : 'Web'} ${isMobile ? '| Mobile' : '| Desktop'} | V :  ${APP_VERSION}`;
-}
-
-    function showToast(message, isError = false, time = 3000) {
-        const toast = document.getElementById('toast');
-        if (!toast) return;
-        
-        toast.textContent = message;
-        toast.style.backgroundColor = isError ? '#d32f2f' : '#007acc';
-        toast.style.display = 'block';
-        
-        setTimeout(() => toast.style.display = 'none', time);
-    }
-
-    function showError(title, error) {
-        const editorContainer = document.getElementById('monaco-editor');
-        editorContainer.innerHTML = `
-            <div class="error-container">
-                <h3>${title}</h3>
-                <p>${error.message}</p>
-                <button onclick="window.location.reload()">Reintentar</button>
-            </div>
-        `;
-    }
-
-    // Ajustar altura del editor para PWA móvil
-function adjustEditorHeightForMobilePWA() {
-    const editorElement = document.getElementById('app');
-    const viewportHeight = window.innerHeight;
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-
-    if (isStandalone) {
-        editorElement.style.height = `${viewportHeight}px`;
-    } else {
-        editorElement.style.height = '93vh';
-    }
-}
-
-    const PREFIX = {
-    soon: ["👨‍💻 ", "🚀 ", "🔧 ", "⏳ "],
-    error: ["⚠️ ", "❌ ", "💥 ", "🔴 "]
 };
 
-function getRandomPrefix(type) {
-    const prefixes = PREFIX[type];
-    return prefixes[Math.floor(Math.random() * prefixes.length)];
-}
+// Prefijos y mensajes para notificaciones
+const PREFIX = {
+    soon: ["👨‍💻 ", "🚀 ", "🔧 ", "⏳ "],
+    error: ["⚠️ ", "❌ ", "💥 ", "🔴 "],
+    success: ["✅ ", "👍 ", "✨ ", "🚀 "]
+};
 
 const MESSAGES = {
     soon: [
@@ -444,46 +81,517 @@ const MESSAGES = {
         "Oh sh*t, a problem",
         "Nuh uh, this failed",
         "PANIC, PANIC, HERE'S AN ERROR"
+    ],
+    success: [
+        "Success! Content saved",
+        "Your work is safe with us",
+        "Progress saved automatically",
+        "Changes stored successfully"
     ]
 };
 
-// Función para obtener mensaje con prefijo
-function getPrefixedMessage(type) {
-    return `${getRandomPrefix(type)}${MESSAGES[type][Math.floor(Math.random() * MESSAGES[type].length)]}`;
+// ===== FUNCIÓN PRINCIPAL =====
+document.addEventListener('DOMContentLoaded', initializeApp);
+
+async function initializeApp() {
+    try {
+        showStatusMessage('Initializing editor...');
+        
+        // 1. Registrar Service Worker
+        registerServiceWorker();
+
+        // 2. Configurar Monaco Editor
+        await configureMonaco();
+
+        // 3. Crear editor con contenido guardado o vacío
+        editor = createEditor();
+
+        // 4. Cargar tipos de Minecraft
+        await loadTypeDefinitions();
+
+        // 5. Configurar PWA
+        setupPWA();
+
+        // 6. Configurar controles
+        setupControls();
+        
+        // 7. Configurar barra de estado
+        setupStatusBar();
+        
+        // 8. Configurar guardado automático
+        setupAutoSave();
+        
+        // 9. Ajustar altura para móvil
+        adjustEditorHeightForMobilePWA();
+        window.addEventListener('resize', adjustEditorHeightForMobilePWA);
+
+        showToast(getRandomMessage('success'), false);
+        showStatusMessage('Editor ready');
+    } catch (error) {
+        console.error('Error initializing app:', error);
+        showError('Error al iniciar el editor', error);
+        showStatusMessage('Initialization failed');
+    }
 }
 
-// Implementación en executeAction
+// ===== FUNCIONES DE MONACO =====
+function configureMonaco() {
+    return new Promise((resolve) => {
+        require.config({
+            paths: { 
+                'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.40.0/min/vs'
+            },
+            waitSeconds: 30
+        });
+
+        window.MonacoEnvironment = {
+            getWorkerUrl: function(moduleId, label) {
+                return `data:text/javascript;charset=utf-8,${encodeURIComponent(`
+                    self.MonacoEnvironment = {
+                        baseUrl: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.40.0/min/'
+                    };
+                    importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.40.0/min/vs/base/worker/workerMain.js');
+                `)}`;
+            }
+        };
+
+        require(['vs/editor/editor.main'], resolve);
+    });
+}
+
+function createEditor() {
+    // Cargar contenido guardado o empezar con editor vacío
+    const initialContent = loadSavedState();
+    
+    const editorInstance = monaco.editor.create(document.getElementById('monaco-editor'), {
+        value: initialContent,
+        language: 'javascript',
+        theme: 'vs-dark',
+        automaticLayout: true,
+        minimap: { enabled: true },
+        fontSize: 14,
+        lineHeight: 24,
+        scrollBeyondLastLine: false,
+        renderWhitespace: 'selection'
+    });
+
+    // Establecer foco en el editor
+    setTimeout(() => editorInstance.focus(), 300);
+    
+    return editorInstance;
+}
+
+// ===== CARGA DE TIPOS =====
+async function loadTypeDefinitions() {
+    try {
+        showStatusMessage('Loading API definitions...');
+        
+        const [serverTypes, serverUiTypes, gameTestTypes] = await Promise.all([
+            fetchTypeDefinition('/types/@minecraft/server/index.d.ts'),
+            fetchTypeDefinition('/types/@minecraft/server-ui/index.d.ts'),
+            fetchTypeDefinition('/types/@minecraft/server-gametest/index.d.ts')
+        ]);
+
+        monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
+            target: monaco.languages.typescript.ScriptTarget.ES2020,
+            allowNonTsExtensions: true,
+            moduleResolution: monaco.languages.typescript.ModuleResolutionKind.NodeJs,
+            module: monaco.languages.typescript.ModuleKind.CommonJS,
+            typeRoots: ["file:///types"],
+            baseUrl: "file:///",
+            paths: {
+                "@minecraft/server": ["node_modules/@minecraft/server"],
+                "@minecraft/server-ui": ["node_modules/@minecraft/server-ui"],
+                "@minecraft/server-gametest": ["node_modules/@minecraft/server-gametest"]
+            },
+            strict: true
+        });
+
+        monaco.languages.typescript.typescriptDefaults.addExtraLib(
+            serverTypes,
+            'file:///node_modules/@minecraft/server/index.d.ts'
+        );
+        
+        monaco.languages.typescript.typescriptDefaults.addExtraLib(
+            serverUiTypes,
+            'file:///node_modules/@minecraft/server-ui/index.d.ts'
+        );
+        
+        monaco.languages.typescript.typescriptDefaults.addExtraLib(
+            gameTestTypes,
+            'file:///node_modules/@minecraft/server-gametest/index.d.ts'
+        );
+
+        monaco.editor.setModelLanguage(editor.getModel(), 'typescript');
+        showStatusMessage('API definitions loaded');
+        return true;
+    } catch (error) {
+        console.error("Error loading API types:", error);
+        showToast(getRandomMessage('error'), true);
+        showStatusMessage('Failed to load API definitions');
+        return false;
+    }
+}
+
+async function fetchTypeDefinition(path) {
+    try {
+        const response = await fetch(path);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return await response.text();
+    } catch (error) {
+        console.error(`Error loading ${path}:`, error);
+        throw error;
+    }
+}
+
+// ===== FUNCIONES DE PERSISTENCIA =====
+function setupAutoSave() {
+    if (!editor) return;
+    
+    showStatusMessage('Setting up auto-save...');
+    
+    // Guardar inmediatamente al cambiar contenido (con debounce)
+    editor.onDidChangeModelContent(() => {
+        clearTimeout(saveTimeout);
+        saveTimeout = setTimeout(() => {
+            saveEditorState();
+        }, SAVE_DEBOUNCE_TIME);
+    });
+    
+    // También guardar periódicamente por si acaso
+    setInterval(saveEditorState, AUTO_SAVE_INTERVAL);
+    
+    // Guardar cuando la página se cierre
+    window.addEventListener('beforeunload', saveEditorState);
+    
+    showStatusMessage('Auto-save configured');
+}
+
+function saveEditorState() {
+    try {
+        if (!editor) return;
+        
+        const content = editor.getValue();
+        const filenameInput = document.getElementById('filename-input');
+        const filename = filenameInput ? filenameInput.value || 'main' : 'main';
+        
+        localStorage.setItem(STORAGE_KEY, content);
+        localStorage.setItem(STORAGE_FILENAME_KEY, filename);
+        
+        console.debug('Editor state saved');
+        flashSaveIndicator();
+    } catch (error) {
+        console.error('Error saving editor state:', error);
+        showToast('Error saving your work', true);
+    }
+}
+
+function loadSavedState() {
+    try {
+        const savedContent = localStorage.getItem(STORAGE_KEY);
+        const savedFilename = localStorage.getItem(STORAGE_FILENAME_KEY);
+        
+        if (savedFilename && document.getElementById('filename-input')) {
+            document.getElementById('filename-input').value = savedFilename;
+        }
+        
+        return savedContent || ''; // Devuelve cadena vacía si no hay contenido guardado
+    } catch (error) {
+        console.error('Error loading saved state:', error);
+        return '';
+    }
+}
+
+function flashSaveIndicator() {
+    const indicator = document.getElementById('save-indicator');
+    if (indicator) {
+        indicator.style.display = 'block';
+        setTimeout(() => {
+            indicator.style.display = 'none';
+        }, 2000);
+    }
+}
+
+// ===== FUNCIONES PWA =====
+function registerServiceWorker() {
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js')
+            .then(reg => console.log('Service Worker registered:', reg.scope))
+            .catch(err => console.error('Service Worker registration failed:', err));
+    }
+}
+
+function setupPWA() {
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        updateInstallButton();
+    });
+
+    window.addEventListener('appinstalled', () => {
+        deferredPrompt = null;
+        updateInstallButton();
+        showToast('App installed successfully');
+    });
+
+    updateInstallButton();
+}
+
+function updateInstallButton() {
+    const installBtn = document.getElementById('install-btn');
+    if (!installBtn) return;
+
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+    
+    if (isStandalone) {
+        installBtn.classList.add('installed');
+        installBtn.textContent = "✓ Installed";
+        installBtn.disabled = true;
+    } else if (deferredPrompt) {
+        installBtn.classList.add('available');
+        installBtn.textContent = "↓ Install";
+        installBtn.disabled = false;
+    } else {
+        installBtn.classList.remove('available', 'installed');
+        installBtn.textContent = "Install";
+        installBtn.disabled = true;
+    }
+}
+
+// ===== FUNCIONES DE INTERFAZ =====
+function setupControls() {
+    const moduleSelect = document.getElementById('module-select');
+    if (moduleSelect) {
+        moduleSelect.addEventListener('change', (e) => {
+            if (!editor.getValue() || confirm('Loading an example will replace your current work. Continue?')) {
+                const module = e.target.value;
+                editor.setValue(EXAMPLES[module]);
+                editor.focus();
+            } else {
+                // Revert selection
+                e.target.value = moduleSelect.dataset.lastValue || 'server';
+            }
+        });
+        
+        // Save last selection
+        moduleSelect.dataset.lastValue = moduleSelect.value;
+    }
+    
+    document.getElementById('copy-btn')?.addEventListener('click', copyScript);
+    document.getElementById('install-btn')?.addEventListener('click', installApp);
+    document.getElementById('reset-btn')?.addEventListener('click', resetEditor);
+    document.getElementById('filename-input')?.addEventListener('change', saveEditorState);
+    document.getElementById('download-btn')?.addEventListener('click', downloadCode);
+    document.getElementById('min-btn')?.addEventListener('click', minToolbar);
+}
+
+function setupStatusBar() {
+    if (!editor) return;
+    
+    editor.onDidChangeModelContent(() => {
+        updateStatusBar();
+        updateLineCount();
+    });
+    
+    editor.onDidChangeCursorPosition(updateStatusBar);
+    updateStatusBar();
+    updateLineCount();
+}
+
+function resetEditor() {
+    if (!editor) return;
+    
+    if (confirm('Are you sure you want to reset the editor? All unsaved changes will be lost.')) {
+        // Clear localStorage
+        localStorage.removeItem(STORAGE_KEY);
+        localStorage.removeItem(STORAGE_FILENAME_KEY);
+        
+        // Reset to empty editor
+        editor.setValue('');
+        if (document.getElementById('filename-input')) {
+            document.getElementById('filename-input').value = 'main';
+        }
+        
+        showToast('Editor reset. Starting with a clean file.');
+    }
+}
+
+function installApp() {
+    if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then(choice => {
+            if (choice.outcome === 'accepted') {
+                showToast('Installation in progress...');
+            }
+            deferredPrompt = null;
+            updateInstallButton();
+        });
+    }
+}
+
+async function copyScript() {
+    try {
+        await navigator.clipboard.writeText(editor.getValue());
+        showToast('Code copied to clipboard');
+    } catch (err) {
+        console.error('Failed to copy:', err);
+        showToast('Failed to copy code', true);
+    }
+}
+
+async function downloadCode() {
+    try {
+        if (!editor || typeof editor.getValue !== 'function') {
+            throw new Error('Editor not available');
+        }
+
+        const codeContent = editor.getValue();
+        
+        if (!codeContent.trim()) {
+            showToast('Editor is empty', true);
+            return;
+        }
+        
+        const fileNameInput = document.getElementById('filename-input');
+        let fileName = fileNameInput ? fileNameInput.value.trim() : 'script';
+        
+        // Sanitize filename
+        fileName = fileName
+            .replace(/[^a-z0-9\-_]/gi, '_')
+            .replace(/^_+|_+$/g, '')
+            .replace(/_+/g, '_')
+            .toLowerCase()
+            .substring(0, 50) || 'script';
+        
+        const blob = new Blob([codeContent], { type: 'application/javascript;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${fileName}.js`;
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        
+        setTimeout(() => {
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }, 100);
+        
+        showToast(`Downloaded: ${fileName}.js`);
+    } catch (error) {
+        console.error('Download error:', error);
+        showToast('Download failed', true);
+    }
+}
+
 function executeAction() {
     try {
-        
-        const message = getPrefixedMessage('soon');
+        const message = getRandomMessage('soon');
         showToast(message, false, 5000);
-        
     } catch(error) {
-        const message = getPrefixedMessage('error');
-        console.error(`${message}:`, error);
-        
-        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        showToast(
-            isMobile ? message : `${message} (Ver consola para detalles)`,
-            true,
-            5000
-        );
+        console.error('Action failed:', error);
+        showToast(getRandomMessage('error'), true, 5000);
     }
 }
 
 function minToolbar() {
-  const toolBar = document.getElementById("header");
-  toolBar.classList.toggle("min-toolbar");
-  
-  // Opcional: Cambiar el ícono/texto del botón según el estado
-  const minBtn = document.getElementById("min-btn"); // Asegúrate de tener este ID
-  if (toolBar.classList.contains("min-toolbar")) {
-    minBtn.textContent = "🔽 Open Toolbar 🔽";
-  } else {
-    minBtn.textContent = "🔼 Close Toolbar 🔼";
-  }
+    const toolBar = document.getElementById("header");
+    const minBtn = document.getElementById("min-btn");
+    
+    if (toolBar && minBtn) {
+        toolBar.classList.toggle("min-toolbar");
+        
+        if (toolBar.classList.contains("min-toolbar")) {
+            minBtn.textContent = "🔽 Open Toolbar 🔽";
+        } else {
+            minBtn.textContent = "🔼 Close Toolbar 🔼";
+        }
+    }
 }
 
-    // ===== INICIALIZACIÓN =====
-    document.addEventListener('DOMContentLoaded', initializeApp);
+// ===== FUNCIONES DE ESTADO Y NOTIFICACIONES =====
+function updateStatusBar() {
+    if (!editor) return;
+    const statusBar = document.getElementById('status-bar');
+    if (!statusBar) return;
+    
+    const position = editor.getPosition();
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    statusBar.textContent = `Ln ${position.lineNumber}, Col ${position.column} | ${isStandalone ? 'App' : 'Web'} ${isMobile ? '| Mobile' : '| Desktop'} | v${APP_VERSION}`;
+}
+
+function updateLineCount() {
+    if (!editor) return;
+    const lineCountElement = document.getElementById('line-count');
+    if (lineCountElement) {
+        const lineCount = editor.getModel().getLineCount();
+        lineCountElement.textContent = `${lineCount} lines`;
+    }
+}
+
+function showStatusMessage(message) {
+    console.log(`Status: ${message}`);
+    const statusBar = document.getElementById('status-bar');
+    if (statusBar) {
+        statusBar.textContent = message;
+    }
+}
+
+function showToast(message, isError = false, time = 3000) {
+    const toast = document.getElementById('toast');
+    if (!toast) return;
+    
+    toast.textContent = message;
+    toast.style.backgroundColor = isError ? '#d32f2f' : '#007acc';
+    toast.style.display = 'block';
+    
+    setTimeout(() => toast.style.display = 'none', time);
+}
+
+function showError(title, error) {
+    const editorContainer = document.getElementById('monaco-editor');
+    if (editorContainer) {
+        editorContainer.innerHTML = `
+            <div class="error-container">
+                <h3>${title}</h3>
+                <p>${error.message}</p>
+                <button onclick="window.location.reload()">Try Again</button>
+            </div>
+        `;
+    }
+}
+
+// ===== FUNCIONES UTILITARIAS =====
+function adjustEditorHeightForMobilePWA() {
+    const editorElement = document.getElementById('app');
+    if (!editorElement) return;
+    
+    const viewportHeight = window.innerHeight;
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+
+    editorElement.style.height = isStandalone ? `${viewportHeight}px` : '93vh';
+}
+
+function getRandomMessage(type) {
+    const prefixes = PREFIX[type] || [''];
+    const messages = MESSAGES[type] || [type];
+    
+    const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
+    const message = messages[Math.floor(Math.random() * messages.length)];
+    
+    return `${prefix}${message}`;
+}
+
+// Helper para mostrar mensajes aleatorios
+function getRandomMessage(type) {
+    const prefixes = PREFIX[type] || [''];
+    const messages = MESSAGES[type] || [type];
+    
+    const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
+    const message = messages[Math.floor(Math.random() * messages.length)];
+    
+    return `${prefix}${message}`;
+}
