@@ -182,7 +182,7 @@ function createEditor() {
         theme: 'vs-dark',
         automaticLayout: true,
         minimap: { enabled: true },
-        wordWrap: isActive,
+        wordWrap: 'on',
         fontSize: 12,
         lineHeight: 20,
         scrollBeyondLastLine: true,
