@@ -159,16 +159,42 @@ function configureMonaco() {
     });
 }
 
+function setupWordWrapToggle() {
+  const checkbox = document.getElementById("wrapToggle");
+
+  // Leer valor guardado y reflejarlo en el checkbox
+  const saved = localStorage.getItem("recordarEstado");
+  const wrapEnabled = saved === "true";
+  checkbox.checked = wrapEnabled;
+
+  // Aplicar wordWrap al editor (si ya existe)
+  if (editor) {
+    editor.updateOptions({ wordWrap: wrapEnabled ? 'on' : 'off' });
+  }
+
+  // Escuchar cambios en el checkbox
+  checkbox.addEventListener("change", () => {
+    const isChecked = checkbox.checked;
+    localStorage.setItem("recordarEstado", isChecked);
+    if (editor) {
+      editor.updateOptions({ wordWrap: isChecked ? 'on' : 'off' });
+    }
+  });
+}
+
 function createEditor() {
     const initialContent = loadSavedState();
-    
+
+    const saved = localStorage.getItem("recordarEstado");
+    const wrapEnabled = saved === "true";  // Convertimos el string a booleano
+
     const editorInstance = monaco.editor.create(document.getElementById('monaco-editor'), {
         value: initialContent,
         language: 'javascript',
         theme: 'vs-dark',
         automaticLayout: true,
         minimap: { enabled: true },
-        wordWrap: true,
+        wordWrap: 'off',
         fontSize: 12,
         lineHeight: 20,
         scrollBeyondLastLine: true,
