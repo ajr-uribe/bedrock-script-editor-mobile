@@ -175,454 +175,457 @@ async function loadMonacoEditor() {
 
   return new Promise((resolve) => {
     require(['vs/editor/editor.main'], resolve);
-  });
-}
+    configureMonacoThemes(monaco);
+    // ===== FUNCIONES DE MONACO =====
+    function createEditor() {
+      const initialContent = loadSavedState();
 
-// ===== FUNCIONES DE MONACO =====
-function createEditor() {
-  const initialContent = loadSavedState();
+      // Recuperar el estado del wrap del localStorage (true por defecto)
+      const wrapEnabled = localStorage.getItem("wordWrapEnabled") !== "false";
 
-  // Recuperar el estado del wrap del localStorage (true por defecto)
-  const wrapEnabled = localStorage.getItem("wordWrapEnabled") !== "false";
+      // Configurar el checkbox según el estado guardado
+      const wrappingCheckbox = document.getElementById('wrapping');
+      if (wrappingCheckbox) {
+        wrappingCheckbox.checked = wrapEnabled;
+        wrappingCheckbox.addEventListener('change', toggleWordWrap);
+      }
 
-  // Configurar el checkbox según el estado guardado
-  const wrappingCheckbox = document.getElementById('wrapping');
-  if (wrappingCheckbox) {
-    wrappingCheckbox.checked = wrapEnabled;
-    wrappingCheckbox.addEventListener('change', toggleWordWrap);
-  }
+      const editorInstance = monaco.editor.create(document.getElementById('monaco-editor'), {
+        value: initialContent,
+        language: 'javascript',
+        theme: 'vs-dark',
+        automaticLayout: true,
+        minimap: {
+          enabled: true
+        },
+        wordWrap: wrapEnabled ? 'on': 'off',
+        fontSize: 12,
+        lineHeight: 20,
+        scrollBeyondLastLine: true,
+        renderWhitespace: 'selection'
+      });
+      document.getElementById('theme-selector').addEventListener('change', (e) => {
+        monaco.editor.setTheme(e.target.value);
+      });
 
-  const editorInstance = monaco.editor.create(document.getElementById('monaco-editor'), {
-    value: initialContent,
-    language: 'javascript',
-    theme: 'vs-dark',
-    automaticLayout: true,
-    minimap: {
-      enabled: true
-    },
-    wordWrap: wrapEnabled ? 'on': 'off',
-    fontSize: 12,
-    lineHeight: 20,
-    scrollBeyondLastLine: true,
-    renderWhitespace: 'selection'
-  });
-  document.getElementById('theme-selector').addEventListener('change', (e) => {
-    monaco.editor.setTheme(e.target.value);
-  });
-
-  setTimeout(() => editorInstance.focus(), 300);
-  return editorInstance;
-}
-
-function toggleWordWrap() {
-  if (!editor) return;
-
-  const wrappingCheckbox = document.getElementById('wrapping');
-  const isChecked = wrappingCheckbox.checked;
-
-  // Actualizar la configuración del editor
-  editor.updateOptions({
-    wordWrap: isChecked ? 'on': 'off'
+      setTimeout(() => editorInstance.focus(), 300);
+      return editorInstance;
+    }
   });
 
-  // Guardar preferencia
-  localStorage.setItem("wordWrapEnabled", isChecked.toString());
-
-  showToast(`Word Wrap ${isChecked ? 'enabled': 'disabled'}`);
-}
-
-// ===== CARGA DE TIPOS =====
-async function loadTypeDefinitions() {
-  try {
-    showStatusMessage('Loading API definitions...');
-
-    const [serverTypes,
-      serverUiTypes,
-      gameTestTypes] = await Promise.all([
-        fetchTypeDefinition('/types/@minecraft/server/index.d.ts'),
-        fetchTypeDefinition('/types/@minecraft/server-ui/index.d.ts'),
-        fetchTypeDefinition('/types/@minecraft/server-gametest/index.d.ts')
-      ]);
-
-    monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
-      target: monaco.languages.typescript.ScriptTarget.ES2020,
-      allowNonTsExtensions: true,
-      moduleResolution: monaco.languages.typescript.ModuleResolutionKind.NodeJs,
-      module: monaco.languages.typescript.ModuleKind.CommonJS,
-      typeRoots: ["file:///types"],
-      baseUrl: "file:///",
-      paths: {
-        "@minecraft/server": ["node_modules/@minecraft/server"],
-        "@minecraft/server-ui": ["node_modules/@minecraft/server-ui"],
-        "@minecraft/server-gametest": ["node_modules/@minecraft/server-gametest"]
-      },
-      strict: true
-    });
-
-    monaco.languages.typescript.typescriptDefaults.addExtraLib(
-      serverTypes,
-      'file:///node_modules/@minecraft/server/index.d.ts'
-    );
-
-    monaco.languages.typescript.typescriptDefaults.addExtraLib(
-      serverUiTypes,
-      'file:///node_modules/@minecraft/server-ui/index.d.ts'
-    );
-
-    monaco.languages.typescript.typescriptDefaults.addExtraLib(
-      gameTestTypes,
-      'file:///node_modules/@minecraft/server-gametest/index.d.ts'
-    );
-
-    monaco.editor.setModelLanguage(editor.getModel(), 'typescript');
-    showStatusMessage('API definitions loaded');
-    return true;
-  } catch (error) {
-    console.error("Error loading API types:", error);
-    showToast(getRandomMessage('error'), true);
-    showStatusMessage('Failed to load API definitions');
-    return false;
-  }
-}
-
-async function fetchTypeDefinition(path) {
-  try {
-    const response = await fetch(path);
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    return await response.text();
-  } catch (error) {
-    console.error(`Error loading ${path}:`, error);
-    throw error;
-  }
-}
-
-// ===== FUNCIONES DE PERSISTENCIA =====
-function setupAutoSave() {
-  if (!editor) return;
-
-  showStatusMessage('Setting up auto-save...');
-
-  editor.onDidChangeModelContent(() => {
-    clearTimeout(saveTimeout);
-    saveTimeout = setTimeout(() => {
-      saveEditorState();
-    }, SAVE_DEBOUNCE_TIME);
-  });
-
-  setInterval(saveEditorState, AUTO_SAVE_INTERVAL);
-  window.addEventListener('beforeunload', saveEditorState);
-  showStatusMessage('Auto-save configured');
-}
-
-function saveEditorState() {
-  try {
+  function toggleWordWrap() {
     if (!editor) return;
 
-    const content = editor.getValue();
-    const filenameInput = document.getElementById('filename-input');
-    const filename = filenameInput ? filenameInput.value || 'main': 'main';
+    const wrappingCheckbox = document.getElementById('wrapping');
+    const isChecked = wrappingCheckbox.checked;
 
-    localStorage.setItem(STORAGE_KEY, content);
-    localStorage.setItem(STORAGE_FILENAME_KEY, filename);
-
-    console.debug('Editor state saved');
-    flashSaveIndicator();
-  } catch (error) {
-    console.error('Error saving editor state:', error);
-    showToast('Error saving your work', true);
-  }
-}
-
-function loadSavedState() {
-  try {
-    const savedContent = localStorage.getItem(STORAGE_KEY);
-    const savedFilename = localStorage.getItem(STORAGE_FILENAME_KEY);
-
-    if (savedFilename && document.getElementById('filename-input')) {
-      document.getElementById('filename-input').value = savedFilename;
-    }
-
-    return savedContent || '';
-  } catch (error) {
-    console.error('Error loading saved state:', error);
-    return '';
-  }
-}
-
-function flashSaveIndicator() {
-  const indicator = document.getElementById('save-status');
-  if (indicator) {
-    indicator.style.display = 'block';
-    setTimeout(() => {
-      indicator.style.display = 'none';
-    }, 2000);
-  }
-}
-
-// ===== FUNCIONES PWA =====
-function registerServiceWorker() {
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/sw.js')
-    .then(reg => {
-      console.log('Service Worker registered:', reg.scope);
-      // Verificar actualizaciones periódicamente
-      setInterval(() => reg.update(), 60 * 60 * 1000);
-    })
-    .catch(err => console.error('Service Worker registration failed:', err));
-  }
-}
-
-function setupPWA() {
-  window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-    updateInstallButton();
-  });
-
-  window.addEventListener('appinstalled', () => {
-    deferredPrompt = null;
-    updateInstallButton();
-    showToast('App installed successfully');
-  });
-
-  updateInstallButton();
-}
-
-function updateInstallButton() {
-  const installBtn = document.getElementById('install-btn');
-  if (!installBtn) return;
-
-  const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-
-  if (isStandalone) {
-    installBtn.classList.add('installed');
-    installBtn.textContent = "✓ Installed";
-    installBtn.disabled = true;
-  } else if (deferredPrompt) {
-    installBtn.classList.add('available');
-    installBtn.textContent = "↓ Install";
-    installBtn.disabled = false;
-  } else {
-    installBtn.classList.remove('available', 'installed');
-    installBtn.textContent = "Install";
-    installBtn.disabled = true;
-  }
-}
-
-// ===== FUNCIONES DE INTERFAZ =====
-function setupControls() {
-  const moduleSelect = document.getElementById('module-select');
-  if (moduleSelect) {
-    moduleSelect.addEventListener('change', (e) => {
-      if (!editor.getValue() || confirm('Loading an example will replace your current work. Continue?')) {
-        const module = e.target.value;
-        editor.setValue(EXAMPLES[module]);
-        editor.focus();
-      } else {
-        e.target.value = moduleSelect.dataset.lastValue || 'server';
-      }
+    // Actualizar la configuración del editor
+    editor.updateOptions({
+      wordWrap: isChecked ? 'on': 'off'
     });
-    moduleSelect.dataset.lastValue = moduleSelect.value;
+
+    // Guardar preferencia
+    localStorage.setItem("wordWrapEnabled",
+      isChecked.toString());
+
+    showToast(`Word Wrap ${isChecked ? 'enabled': 'disabled'}`);
   }
 
-  document.getElementById('copy-btn')?.addEventListener('click',
-    copyScript);
-  document.getElementById('install-btn')?.addEventListener('click',
-    installApp);
-  document.getElementById('reset-btn')?.addEventListener('click',
-    resetEditor);
-  document.getElementById('filename-input')?.addEventListener('change',
-    saveEditorState);
-  document.getElementById('download-btn')?.addEventListener('click',
-    downloadCode);
-  document.getElementById('wrapping')?.addEventListener('change',
-    toggleWordWrap);
-}
+  // ===== CARGA DE TIPOS =====
+  async function loadTypeDefinitions() {
+    try {
+      showStatusMessage('Loading API definitions...');
 
-function setupStatusBar() {
-  if (!editor) return;
+      const [serverTypes,
+        serverUiTypes,
+        gameTestTypes] = await Promise.all([
+          fetchTypeDefinition('/types/@minecraft/server/index.d.ts'),
+          fetchTypeDefinition('/types/@minecraft/server-ui/index.d.ts'),
+          fetchTypeDefinition('/types/@minecraft/server-gametest/index.d.ts')
+        ]);
 
-  editor.onDidChangeModelContent(() => {
-    updateStatusBar();
-  });
+      monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
+        target: monaco.languages.typescript.ScriptTarget.ES2020,
+        allowNonTsExtensions: true,
+        moduleResolution: monaco.languages.typescript.ModuleResolutionKind.NodeJs,
+        module: monaco.languages.typescript.ModuleKind.CommonJS,
+        typeRoots: ["file:///types"],
+        baseUrl: "file:///",
+        paths: {
+          "@minecraft/server": ["node_modules/@minecraft/server"],
+          "@minecraft/server-ui": ["node_modules/@minecraft/server-ui"],
+          "@minecraft/server-gametest": ["node_modules/@minecraft/server-gametest"]
+        },
+        strict: true
+      });
 
-  editor.onDidChangeCursorPosition(updateStatusBar);
-  updateStatusBar();
-}
+      monaco.languages.typescript.typescriptDefaults.addExtraLib(
+        serverTypes,
+        'file:///node_modules/@minecraft/server/index.d.ts'
+      );
 
-function resetEditor() {
-  if (!editor) return;
+      monaco.languages.typescript.typescriptDefaults.addExtraLib(
+        serverUiTypes,
+        'file:///node_modules/@minecraft/server-ui/index.d.ts'
+      );
 
-  if (confirm('Are you sure you want to reset the editor? All unsaved changes will be lost.')) {
-    localStorage.removeItem(STORAGE_KEY);
-    localStorage.removeItem(STORAGE_FILENAME_KEY);
-    editor.setValue('');
-    if (document.getElementById('filename-input')) {
-      document.getElementById('filename-input').value = 'main';
+      monaco.languages.typescript.typescriptDefaults.addExtraLib(
+        gameTestTypes,
+        'file:///node_modules/@minecraft/server-gametest/index.d.ts'
+      );
+
+      monaco.editor.setModelLanguage(editor.getModel(),
+        'typescript');
+      showStatusMessage('API definitions loaded');
+      return true;
+    } catch (error) {
+      console.error("Error loading API types:",
+        error);
+      showToast(getRandomMessage('error'),
+        true);
+      showStatusMessage('Failed to load API definitions');
+      return false;
     }
-    showToast('Editor reset. Starting with a clean file.');
   }
-}
 
-function installApp() {
-  if (deferredPrompt) {
-    deferredPrompt.prompt();
-    deferredPrompt.userChoice.then(choice => {
-      if (choice.outcome === 'accepted') {
-        showToast('Installation in progress...');
+  async function fetchTypeDefinition(path) {
+    try {
+      const response = await fetch(path);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      return await response.text();
+    } catch (error) {
+      console.error(`Error loading ${path}:`, error);
+      throw error;
+    }
+  }
+
+  // ===== FUNCIONES DE PERSISTENCIA =====
+  function setupAutoSave() {
+    if (!editor) return;
+
+    showStatusMessage('Setting up auto-save...');
+
+    editor.onDidChangeModelContent(() => {
+      clearTimeout(saveTimeout);
+      saveTimeout = setTimeout(() => {
+        saveEditorState();
+      }, SAVE_DEBOUNCE_TIME);
+    });
+
+    setInterval(saveEditorState, AUTO_SAVE_INTERVAL);
+    window.addEventListener('beforeunload', saveEditorState);
+    showStatusMessage('Auto-save configured');
+  }
+
+  function saveEditorState() {
+    try {
+      if (!editor) return;
+
+      const content = editor.getValue();
+      const filenameInput = document.getElementById('filename-input');
+      const filename = filenameInput ? filenameInput.value || 'main': 'main';
+
+      localStorage.setItem(STORAGE_KEY, content);
+      localStorage.setItem(STORAGE_FILENAME_KEY, filename);
+
+      console.debug('Editor state saved');
+      flashSaveIndicator();
+    } catch (error) {
+      console.error('Error saving editor state:', error);
+      showToast('Error saving your work', true);
+    }
+  }
+
+  function loadSavedState() {
+    try {
+      const savedContent = localStorage.getItem(STORAGE_KEY);
+      const savedFilename = localStorage.getItem(STORAGE_FILENAME_KEY);
+
+      if (savedFilename && document.getElementById('filename-input')) {
+        document.getElementById('filename-input').value = savedFilename;
       }
-      deferredPrompt = null;
+
+      return savedContent || '';
+    } catch (error) {
+      console.error('Error loading saved state:', error);
+      return '';
+    }
+  }
+
+  function flashSaveIndicator() {
+    const indicator = document.getElementById('save-status');
+    if (indicator) {
+      indicator.style.display = 'block';
+      setTimeout(() => {
+        indicator.style.display = 'none';
+      }, 2000);
+    }
+  }
+
+  // ===== FUNCIONES PWA =====
+  function registerServiceWorker() {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js')
+      .then(reg => {
+        console.log('Service Worker registered:', reg.scope);
+        // Verificar actualizaciones periódicamente
+        setInterval(() => reg.update(), 60 * 60 * 1000);
+      })
+      .catch(err => console.error('Service Worker registration failed:', err));
+    }
+  }
+
+  function setupPWA() {
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
       updateInstallButton();
     });
-  }
-}
 
-async function copyScript() {
-  try {
-    await navigator.clipboard.writeText(editor.getValue());
-    showToast('Code copied to clipboard');
-  } catch (err) {
-    console.error('Failed to copy:',
-      err);
-    showToast('Failed to copy code',
-      true);
-  }
-}
-
-async function downloadCode() {
-  try {
-    if (!editor || typeof editor.getValue !== 'function') {
-      throw new Error('Editor not available');
-    }
-
-    const codeContent = editor.getValue();
-
-    if (!codeContent.trim()) {
-      showToast('Editor is empty', true);
-      return;
-    }
-
-    const fileNameInput = document.getElementById('filename-input');
-    let fileName = fileNameInput ? fileNameInput.value.trim(): 'script';
-
-    fileName = fileName
-    .replace(/[^a-z0-9\-_]/gi, '_')
-    .replace(/^_+|_+$/g, '')
-    .replace(/_+/g, '_')
-    .toLowerCase()
-    .substring(0, 50) || 'script';
-
-    const blob = new Blob([codeContent], {
-      type: 'application/javascript;charset=utf-8'
+    window.addEventListener('appinstalled', () => {
+      deferredPrompt = null;
+      updateInstallButton();
+      showToast('App installed successfully');
     });
-    const url = URL.createObjectURL(blob);
 
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${fileName}.js`;
-    a.style.display = 'none';
-    document.body.appendChild(a);
-    a.click();
-
-    setTimeout(() => {
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }, 100);
-
-    showToast(`Downloaded: ${fileName}.js`);
-  } catch (error) {
-    console.error('Download error:', error);
-    showToast('Download failed', true);
+    updateInstallButton();
   }
-}
 
-function executeAction() {
-  try {
-    const message = getRandomMessage('soon');
-    showToast(message, false, 5000);
-  } catch(error) {
-    console.error('Action failed:', error);
-    showToast(getRandomMessage('error'), true, 5000);
-  }
-}
+  function updateInstallButton() {
+    const installBtn = document.getElementById('install-btn');
+    if (!installBtn) return;
 
-function minToolbar() {
-  const header = document.getElementById("header");
-  const minBtn = document.getElementById("min-btn");
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
 
-  if (header && minBtn) {
-    header.classList.toggle("min-toolbar");
-
-    if (header.classList.contains("min-toolbar")) {
-      minBtn.textContent = "🔽 Open Toolbar 🔽";
+    if (isStandalone) {
+      installBtn.classList.add('installed');
+      installBtn.textContent = "✓ Installed";
+      installBtn.disabled = true;
+    } else if (deferredPrompt) {
+      installBtn.classList.add('available');
+      installBtn.textContent = "↓ Install";
+      installBtn.disabled = false;
     } else {
-      minBtn.textContent = "🔼 Close Toolbar 🔼";
+      installBtn.classList.remove('available', 'installed');
+      installBtn.textContent = "Install";
+      installBtn.disabled = true;
     }
   }
-}
 
-// ===== FUNCIONES DE ESTADO Y NOTIFICACIONES =====
-function updateStatusBar() {
-  if (!editor) return;
-  const statusBar = document.getElementById('status-bar');
-  if (!statusBar) return;
+  // ===== FUNCIONES DE INTERFAZ =====
+  function setupControls() {
+    const moduleSelect = document.getElementById('module-select');
+    if (moduleSelect) {
+      moduleSelect.addEventListener('change', (e) => {
+        if (!editor.getValue() || confirm('Loading an example will replace your current work. Continue?')) {
+          const module = e.target.value;
+          editor.setValue(EXAMPLES[module]);
+          editor.focus();
+        } else {
+          e.target.value = moduleSelect.dataset.lastValue || 'server';
+        }
+      });
+      moduleSelect.dataset.lastValue = moduleSelect.value;
+    }
 
-  const position = editor.getPosition();
-  const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-
-  statusBar.textContent = `Ln ${position.lineNumber}, Col ${position.column} | ${isStandalone ? 'App': 'Web'} ${isMobile ? '| Mobile': '| Desktop'} | v${APP_VERSION}`;
-}
-
-function showStatusMessage(message) {
-  console.log(`Status: ${message}`);
-  const statusBar = document.getElementById('status-bar');
-  if (statusBar) {
-    statusBar.textContent = message;
+    document.getElementById('copy-btn')?.addEventListener('click',
+      copyScript);
+    document.getElementById('install-btn')?.addEventListener('click',
+      installApp);
+    document.getElementById('reset-btn')?.addEventListener('click',
+      resetEditor);
+    document.getElementById('filename-input')?.addEventListener('change',
+      saveEditorState);
+    document.getElementById('download-btn')?.addEventListener('click',
+      downloadCode);
+    document.getElementById('wrapping')?.addEventListener('change',
+      toggleWordWrap);
   }
-}
 
-function showToast(message, isError = false, time = 3000) {
-  const toast = document.getElementById('toast');
-  if (!toast) return;
+  function setupStatusBar() {
+    if (!editor) return;
 
-  toast.textContent = message;
-  toast.style.backgroundColor = isError ? '#d32f2f': '#007acc';
-  toast.style.display = 'block';
+    editor.onDidChangeModelContent(() => {
+      updateStatusBar();
+    });
 
-  setTimeout(() => toast.style.display = 'none', time);
-}
-
-function showError(title, error) {
-  const editorContainer = document.getElementById('monaco-editor');
-  if (editorContainer) {
-    editorContainer.innerHTML = `
-    <div class="error-container">
-    <h3>${title}</h3>
-    <p>${error.message}</p>
-    <button onclick="window.location.reload()">Try Again</button>
-    </div>
-    `;
+    editor.onDidChangeCursorPosition(updateStatusBar);
+    updateStatusBar();
   }
-}
 
-// ===== FUNCIONES UTILITARIAS =====
-function adjustEditorHeightForMobilePWA() {
-  const editorElement = document.getElementById('app');
-  if (!editorElement) return;
+  function resetEditor() {
+    if (!editor) return;
 
-  const viewportHeight = window.innerHeight;
-  const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+    if (confirm('Are you sure you want to reset the editor? All unsaved changes will be lost.')) {
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(STORAGE_FILENAME_KEY);
+      editor.setValue('');
+      if (document.getElementById('filename-input')) {
+        document.getElementById('filename-input').value = 'main';
+      }
+      showToast('Editor reset. Starting with a clean file.');
+    }
+  }
 
-  editorElement.style.height = isStandalone ? `${viewportHeight}px`: '93vh';
-}
+  function installApp() {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then(choice => {
+        if (choice.outcome === 'accepted') {
+          showToast('Installation in progress...');
+        }
+        deferredPrompt = null;
+        updateInstallButton();
+      });
+    }
+  }
 
-function getRandomMessage(type) {
-  const prefixes = PREFIX[type] || [''];
-  const messages = MESSAGES[type] || [type];
+  async function copyScript() {
+    try {
+      await navigator.clipboard.writeText(editor.getValue());
+      showToast('Code copied to clipboard');
+    } catch (err) {
+      console.error('Failed to copy:',
+        err);
+      showToast('Failed to copy code',
+        true);
+    }
+  }
 
-  const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
-  const message = messages[Math.floor(Math.random() * messages.length)];
+  async function downloadCode() {
+    try {
+      if (!editor || typeof editor.getValue !== 'function') {
+        throw new Error('Editor not available');
+      }
 
-  return `${prefix}${message}`;
-}
+      const codeContent = editor.getValue();
+
+      if (!codeContent.trim()) {
+        showToast('Editor is empty', true);
+        return;
+      }
+
+      const fileNameInput = document.getElementById('filename-input');
+      let fileName = fileNameInput ? fileNameInput.value.trim(): 'script';
+
+      fileName = fileName
+      .replace(/[^a-z0-9\-_]/gi, '_')
+      .replace(/^_+|_+$/g, '')
+      .replace(/_+/g, '_')
+      .toLowerCase()
+      .substring(0, 50) || 'script';
+
+      const blob = new Blob([codeContent], {
+        type: 'application/javascript;charset=utf-8'
+      });
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${fileName}.js`;
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+
+      setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }, 100);
+
+      showToast(`Downloaded: ${fileName}.js`);
+    } catch (error) {
+      console.error('Download error:', error);
+      showToast('Download failed', true);
+    }
+  }
+
+  function executeAction() {
+    try {
+      const message = getRandomMessage('soon');
+      showToast(message, false, 5000);
+    } catch(error) {
+      console.error('Action failed:', error);
+      showToast(getRandomMessage('error'), true, 5000);
+    }
+  }
+
+  function minToolbar() {
+    const header = document.getElementById("header");
+    const minBtn = document.getElementById("min-btn");
+
+    if (header && minBtn) {
+      header.classList.toggle("min-toolbar");
+
+      if (header.classList.contains("min-toolbar")) {
+        minBtn.textContent = "🔽 Open Toolbar 🔽";
+      } else {
+        minBtn.textContent = "🔼 Close Toolbar 🔼";
+      }
+    }
+  }
+
+  // ===== FUNCIONES DE ESTADO Y NOTIFICACIONES =====
+  function updateStatusBar() {
+    if (!editor) return;
+    const statusBar = document.getElementById('status-bar');
+    if (!statusBar) return;
+
+    const position = editor.getPosition();
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+    statusBar.textContent = `Ln ${position.lineNumber}, Col ${position.column} | ${isStandalone ? 'App': 'Web'} ${isMobile ? '| Mobile': '| Desktop'} | v${APP_VERSION}`;
+  }
+
+  function showStatusMessage(message) {
+    console.log(`Status: ${message}`);
+    const statusBar = document.getElementById('status-bar');
+    if (statusBar) {
+      statusBar.textContent = message;
+    }
+  }
+
+  function showToast(message, isError = false, time = 3000) {
+    const toast = document.getElementById('toast');
+    if (!toast) return;
+
+    toast.textContent = message;
+    toast.style.backgroundColor = isError ? '#d32f2f': '#007acc';
+    toast.style.display = 'block';
+
+    setTimeout(() => toast.style.display = 'none', time);
+  }
+
+  function showError(title, error) {
+    const editorContainer = document.getElementById('monaco-editor');
+    if (editorContainer) {
+      editorContainer.innerHTML = `
+      <div class="error-container">
+      <h3>${title}</h3>
+      <p>${error.message}</p>
+      <button onclick="window.location.reload()">Try Again</button>
+      </div>
+      `;
+    }
+  }
+
+  // ===== FUNCIONES UTILITARIAS =====
+  function adjustEditorHeightForMobilePWA() {
+    const editorElement = document.getElementById('app');
+    if (!editorElement) return;
+
+    const viewportHeight = window.innerHeight;
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+
+    editorElement.style.height = isStandalone ? `${viewportHeight}px`: '93vh';
+  }
+
+  function getRandomMessage(type) {
+    const prefixes = PREFIX[type] || [''];
+    const messages = MESSAGES[type] || [type];
+
+    const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
+    const message = messages[Math.floor(Math.random() * messages.length)];
+
+    return `${prefix}${message}`;
+  }
