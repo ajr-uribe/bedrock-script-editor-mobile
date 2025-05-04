@@ -8,7 +8,6 @@ const AUTO_SAVE_INTERVAL = 30000; // 30 segundos
 let editor;
 let deferredPrompt;
 let saveTimeout;
-let editorWrap;
 
 // Ejemplos de código
 const EXAMPLES = {
@@ -91,16 +90,20 @@ const MESSAGES = {
     ]
 };
 // ===== INPUT CHECKER =====
-const wraping = document.getElementById("wraping");
-wraping.addEventListener("change", toggleWrap());
+const checkbox = document.getElementById("miCheckbox");
 
-async function toggleWrap(wraping){
-  if(wraping){
-    editorWrap = true;
-  } else {
-    editorWrap = false;
-  }
-}
+  // Leer al cargar
+  const guardado = localStorage.getItem("recordarEstado");
+  const isActive = guardado === "true";
+  checkbox.checked = isActive;
+
+  // Guardar cuando cambia
+  checkbox.addEventListener("change", () => {
+    const valor = checkbox.checked;  // true o false
+    localStorage.setItem("recordarEstado", valor);
+    
+    editor.updateOptions({wordWrap: isActive ? true : false })
+  });
 // ===== FUNCIÓN PRINCIPAL =====
 document.addEventListener('DOMContentLoaded', initializeApp);
 
@@ -179,7 +182,7 @@ function createEditor() {
         theme: 'vs-dark',
         automaticLayout: true,
         minimap: { enabled: true },
-        wrap: editorWrap,
+        wordWrap: isActive,
         fontSize: 12,
         lineHeight: 20,
         scrollBeyondLastLine: true,
