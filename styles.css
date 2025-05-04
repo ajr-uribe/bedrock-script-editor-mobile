@@ -109,6 +109,7 @@ button:disabled {
   flex: 1;
   position: relative;
   min-height: 300px;
+  transition: all 0s ease;
 }
 #monaco-editor {
   position: absolute;
