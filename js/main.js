@@ -8,6 +8,7 @@ const AUTO_SAVE_INTERVAL = 30000; // 30 segundos
 let editor;
 let deferredPrompt;
 let saveTimeout;
+let editorWrap;
 
 // Ejemplos de código
 const EXAMPLES = {
@@ -89,7 +90,17 @@ const MESSAGES = {
         "Changes stored successfully"
     ]
 };
+// ===== INPUT CHECKER =====
+const wraping = document.getElementById("wraping");
+wraping.addEventListener("change", toggleWrap());
 
+async function toggleWrap(wraping){
+  if(wraping){
+    editorWrap = true;
+  } else {
+    editorWrap = false;
+  }
+}
 // ===== FUNCIÓN PRINCIPAL =====
 document.addEventListener('DOMContentLoaded', initializeApp);
 
@@ -168,6 +179,7 @@ function createEditor() {
         theme: 'vs-dark',
         automaticLayout: true,
         minimap: { enabled: true },
+        wrap: editorWrap,
         fontSize: 12,
         lineHeight: 20,
         scrollBeyondLastLine: true,
