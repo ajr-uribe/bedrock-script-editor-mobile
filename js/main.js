@@ -89,21 +89,7 @@ const MESSAGES = {
         "Changes stored successfully"
     ]
 };
-// ===== INPUT CHECKER =====
-const checkbox = document.getElementById("miCheckbox");
 
-  // Leer al cargar
-  const guardado = localStorage.getItem("recordarEstado");
-  const isActive = guardado === "true";
-  checkbox.checked = isActive;
-
-  // Guardar cuando cambia
-  checkbox.addEventListener("change", () => {
-    const valor = checkbox.checked;  // true o false
-    localStorage.setItem("recordarEstado", valor);
-    
-    editor.updateOptions({wordWrap: isActive ? true : false })
-  });
 // ===== FUNCIÓN PRINCIPAL =====
 document.addEventListener('DOMContentLoaded', initializeApp);
 
@@ -182,7 +168,7 @@ function createEditor() {
         theme: 'vs-dark',
         automaticLayout: true,
         minimap: { enabled: true },
-        wordWrap: 'on',
+        wordWrap: true,
         fontSize: 12,
         lineHeight: 20,
         scrollBeyondLastLine: true,
