@@ -46,6 +46,50 @@ h1 {
   white-space: nowrap;
   gap: 15px;
 }
+.checkbox-container {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  margin-left: 10px;
+  color: #fff;
+}
+
+.checkbox-container input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.checkmark {
+  height: 16px;
+  width: 16px;
+  background-color: #1e1e1e;
+  border: 1px solid #007acc;
+  border-radius: 3px;
+  margin-right: 5px;
+}
+
+.checkbox-container input:checked ~ .checkmark {
+  background-color: #007acc;
+}
+
+.checkmark:after {
+  content: "";
+  display: none;
+  position: relative;
+  left: 4px;
+  top: 1px;
+  width: 4px;
+  height: 8px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.checkbox-container input:checked ~ .checkmark:after {
+  display: block;
+}
 select, button {
   padding: 5px 10px;
   background: #333;
