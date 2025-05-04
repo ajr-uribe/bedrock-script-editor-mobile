@@ -110,7 +110,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // 2. Cargar Monaco Editor
     await loadMonacoEditor();
-
+    configureMonacoThemes(monaco);
     // 3. Crear editor con contenido guardado o vacío
     editor = createEditor();
 
@@ -173,9 +173,8 @@ async function loadMonacoEditor() {
     waitSeconds: 30
   });
 
-  return new Promise((resolve) => {
     require(['vs/editor/editor.main'], resolve);
-    configureMonacoThemes(monaco);
+  return new Promise((resolve) => {
   });
 }
 
