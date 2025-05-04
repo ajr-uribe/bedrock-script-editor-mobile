@@ -159,34 +159,18 @@ function configureMonaco() {
     });
 }
 
-function setupWordWrapToggle() {
-  const checkbox = document.getElementById("wrapToggle");
-
-  // Leer valor guardado y reflejarlo en el checkbox
-  const saved = localStorage.getItem("recordarEstado");
-  const wrapEnabled = saved === "true";
-  checkbox.checked = wrapEnabled;
-
-  // Aplicar wordWrap al editor (si ya existe)
-  if (editor) {
-    editor.updateOptions({ wordWrap: wrapEnabled ? 'on' : 'off' });
-  }
-
-  // Escuchar cambios en el checkbox
-  checkbox.addEventListener("change", () => {
-    const isChecked = checkbox.checked;
-    localStorage.setItem("recordarEstado", isChecked);
-    if (editor) {
-      editor.updateOptions({ wordWrap: isChecked ? 'on' : 'off' });
-    }
-  });
-}
-
 function createEditor() {
     const initialContent = loadSavedState();
-
-    const saved = localStorage.getItem("recordarEstado");
-    const wrapEnabled = saved === "true";  // Convertimos el string a booleano
+    
+    // Recuperar el estado del wrap del localStorage (true por defecto)
+    const wrapEnabled = localStorage.getItem("wordWrapEnabled") !== "false";
+    
+    // Configurar el checkbox según el estado guardado
+    const wrappingCheckbox = document.getElementById('wrapping');
+    if (wrappingCheckbox) {
+        wrappingCheckbox.checked = wrapEnabled;
+        wrappingCheckbox.addEventListener('change', toggleWordWrap);
+    }
 
     const editorInstance = monaco.editor.create(document.getElementById('monaco-editor'), {
         value: initialContent,
@@ -194,7 +178,7 @@ function createEditor() {
         theme: 'vs-dark',
         automaticLayout: true,
         minimap: { enabled: true },
-        wordWrap: 'off',
+        wordWrap: wrapEnabled ? 'on' : 'off', // Configuración inicial
         fontSize: 12,
         lineHeight: 20,
         scrollBeyondLastLine: true,
@@ -582,4 +566,20 @@ function getRandomMessage(type) {
     const message = messages[Math.floor(Math.random() * messages.length)];
     
     return `${prefix}${message}`;
+}
+function toggleWordWrap() {
+    if (!editor) return;
+    
+    const wrappingCheckbox = document.getElementById('wrapping');
+    const isChecked = wrappingCheckbox.checked;
+    
+    // Actualizar la configuración del editor
+    editor.updateOptions({
+        wordWrap: isChecked ? 'on' : 'off'
+    });
+    
+    // Guardar preferencia
+    localStorage.setItem("wordWrapEnabled", isChecked.toString());
+    
+    showToast(`Word Wrap ${isChecked ? 'enabled' : 'disabled'}`);
 }
