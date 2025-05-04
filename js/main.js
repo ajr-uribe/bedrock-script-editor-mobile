@@ -196,6 +196,9 @@ function createEditor() {
     renderWhitespace: 'selection'
   });
 
+  document.getElementById('theme-selector').addEventListener('change', (e) => {
+    monaco.editor.setTheme(e.target.value);
+  });
   setTimeout(() => editorInstance.focus(), 300);
   return editorInstance;
 }
