@@ -168,9 +168,9 @@ function createEditor() {
         theme: 'vs-dark',
         automaticLayout: true,
         minimap: { enabled: true },
-        fontSize: 14,
-        lineHeight: 24,
-        scrollBeyondLastLine: false,
+        fontSize: 12,
+        lineHeight: 20,
+        scrollBeyondLastLine: true,
         renderWhitespace: 'selection'
     });
 
