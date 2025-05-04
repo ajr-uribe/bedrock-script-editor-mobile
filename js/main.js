@@ -178,7 +178,7 @@ function createEditor() {
         theme: 'vs-dark',
         automaticLayout: true,
         minimap: { enabled: true },
-        wordWrap: wrapEnabled ? 'on' : 'off', // Configuración inicial
+        wordWrap: wrapEnabled ? 'on' : 'off',
         fontSize: 12,
         lineHeight: 20,
         scrollBeyondLastLine: true,
@@ -187,6 +187,23 @@ function createEditor() {
 
     setTimeout(() => editorInstance.focus(), 300);
     return editorInstance;
+}
+
+function toggleWordWrap() {
+    if (!editor) return;
+    
+    const wrappingCheckbox = document.getElementById('wrapping');
+    const isChecked = wrappingCheckbox.checked;
+    
+    // Actualizar la configuración del editor
+    editor.updateOptions({
+        wordWrap: isChecked ? 'on' : 'off'
+    });
+    
+    // Guardar preferencia
+    localStorage.setItem("wordWrapEnabled", isChecked.toString());
+    
+    showToast(`Word Wrap ${isChecked ? 'enabled' : 'disabled'}`);
 }
 
 // ===== CARGA DE TIPOS =====
@@ -382,6 +399,7 @@ function setupControls() {
     document.getElementById('reset-btn')?.addEventListener('click', resetEditor);
     document.getElementById('filename-input')?.addEventListener('change', saveEditorState);
     document.getElementById('download-btn')?.addEventListener('click', downloadCode);
+    document.getElementById('wrapping')?.addEventListener('change', toggleWordWrap);
 }
 
 function setupStatusBar() {
@@ -566,20 +584,4 @@ function getRandomMessage(type) {
     const message = messages[Math.floor(Math.random() * messages.length)];
     
     return `${prefix}${message}`;
-}
-function toggleWordWrap() {
-    if (!editor) return;
-    
-    const wrappingCheckbox = document.getElementById('wrapping');
-    const isChecked = wrappingCheckbox.checked;
-    
-    // Actualizar la configuración del editor
-    editor.updateOptions({
-        wordWrap: isChecked ? 'on' : 'off'
-    });
-    
-    // Guardar preferencia
-    localStorage.setItem("wordWrapEnabled", isChecked.toString());
-    
-    showToast(`Word Wrap ${isChecked ? 'enabled' : 'disabled'}`);
 }
