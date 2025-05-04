@@ -174,7 +174,7 @@ async function loadMonacoEditor() {
 
     require(['vs/editor/editor.main'], resolve);
   return new Promise((resolve) => {
-    configureMonacoEditor(monaco);
+    configureMonacoThemes(monaco);
   });
 }
 
