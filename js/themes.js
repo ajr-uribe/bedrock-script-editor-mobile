@@ -97,7 +97,7 @@ function configureMonacoThemes(monaco) {
     }
   });
 
-  // 5. Bonus: Tema "Dracula" (Oscuro popular)
+  // 5. Tema "Dracula" (Oscuro popular)
   monaco.editor.defineTheme('dracula', {
     base: 'vs-dark',
     inherit: true,
