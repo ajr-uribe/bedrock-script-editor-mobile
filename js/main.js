@@ -166,15 +166,22 @@ async function loadMonacoEditor() {
 
   require.config({
     paths: {
-      'vs': useCached ? '/monaco-cache/vs':
-      'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.40.0/min/vs'
+      'vs': useCached ? '/monaco-cache/vs' : 
+           'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.40.0/min/vs'
     },
     waitSeconds: 30
   });
 
-    require(['vs/editor/editor.main'], resolve);
   return new Promise((resolve) => {
-    configureMonacoThemes(monaco);
+    require(['vs/editor/editor.main'], () => {
+      // Llamar a la función de configuración de temas después de que Monaco esté cargado
+      if (typeof configureMonacoThemes === 'function') {
+        configureMonacoThemes(monaco);
+      } else {
+        console.warn('configureMonacoThemes function not found');
+      }
+      resolve();
+    });
   });
 }
 
