@@ -1,7 +1,7 @@
 // ===== CONFIGURACIÓN GLOBAL =====
-const APP_VERSION = '1.2.1';
-const STORAGE_KEY = 'mcbe_editor_content';
-const STORAGE_FILENAME_KEY = 'mcbe_editor_filename';
+const APP_VERSION = '1.2.2-Preview';
+const STORAGE_KEY = 'mcbe_editor_content_preview';
+const STORAGE_FILENAME_KEY = 'mcbe_editor_filename_preview';
 const SAVE_DEBOUNCE_TIME = 1000; // 1 segundo
 const AUTO_SAVE_INTERVAL = 30000; // 30 segundos
 
