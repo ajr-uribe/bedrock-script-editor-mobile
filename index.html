@@ -1,64 +1,57 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta property="og:title" content="MCBE Script Editor" />
-    <meta property="og:description" content="Minecraft bedrock Editor for easily making Scripts with auto-completions" />
-    <meta property="og:image" content="https://res.cloudinary.com/dchi3dtvc/image/upload/favicon_xngegt.png" />
-    <meta property="og:url" content="https://ajr-uribe-editor.vercel.app" />
-    <meta property="og:type" content="website" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <link rel="manifest" href="/manifest.json" />
-    <link rel="icon" href="./icons/favicon.png" />
-    <meta name="theme-color" content="#2b2f34" />
-    <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <title>MCBE Scripts Editor</title>
-    <link rel="stylesheet" href="styles.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta property="og:title" content="MCBE Script Editor" />
+  <meta property="og:description" content="Minecraft Bedrock Editor for easily making Scripts with auto-completions" />
+  <meta property="og:image" content="https://res.cloudinary.com/dchi3dtvc/image/upload/favicon_xngegt.png" />
+  <meta property="og:url" content="https://ajr-uribe-editor.vercel.app" />
+  <meta property="og:type" content="website" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="icon" href="./icons/favicon.png" />
+  <meta name="theme-color" content="#2b2f34" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>MCBE Scripts Editor</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-    <button class="min-toolbar-btn" id="min-btn" onclick="minToolbar()">馃敿 Close Toolbar 馃敿</button>
-    <div id="app">
-        <div id="header">
-            <h1><img src="./icons/favicon.png" id="icon" />Bedrock Scripts Editor</h1>
-            <div id="toolbar">
-                <label for="module-select" style="color:#d4d4d4; margin-right:4px;">Módulo:</label>
-                <select id="module-select">
-                    <option value="@minecraft/server">@minecraft/server</option>
-                    <option value="@minecraft/server-ui">@minecraft/server-ui</option>
-                    <option value="@minecraft/server-gametest">@minecraft/server-gametest</option>
-                </select>
+  <button class="min-toolbar-btn" id="min-btn" onclick="minToolbar()">🔽 Close Toolbar 🔽</button>
+  <div id="app">
+    <div id="header">
+      <h1><img src="./icons/favicon.png" id="icon" />Bedrock Scripts Editor</h1>
+      <div id="toolbar">
+        <select id="module-select">
+          <option value="server">@minecraft/server</option>
+          <option value="server-ui">@minecraft/server-ui</option>
+          <option value="server-gametest">@minecraft/server-gametest</option>
+        </select>
 
-                <label for="version-input" style="color:#d4d4d4; margin-left:10px; margin-right:4px;">Versión:</label>
-                <input type="text" id="version-input" placeholder="Ej: 2.0.0" value="2.0.0" style="width:80px;"/>
+        <input id="version-server" type="text" placeholder="@minecraft/server version" value="2.0.0" />
+        <input id="version-ui" type="text" placeholder="@minecraft/server-ui version" value="2.0.0" />
+        <input id="version-gametest" type="text" placeholder="@minecraft/server-gametest version" value="1.0.0" />
+        <button onclick="loadTypeDefinitions()">Cargar Tipos</button>
 
-                <button id="load-types-btn">Cargar tipos</button>
-
-                <button id="run-btn" onclick="executeAction()">Execute (Soon)</button>
-                <button id="copy-btn">Copy</button>
-                <input type="text" id="filename-input" placeholder="File Name" value="main" />
-                <button id="download-btn">Download</button>
-                <button id="install-btn">Install</button>
-                <button id="reset-btn">Reset Editor</button>
-            </div>
-        </div>
-        <div id="editor-container">
-            <div id="monaco-editor"></div>
-        </div>
-        <div class="status-bar" id="status-bar">
-            Loading editor...
-            <div id="save-status" class="save-status">Saving...</div>
-        </div>
+        <button id="run-btn" onclick="executeAction()">Execute (Soon)</button>
+        <button id="copy-btn">Copy</button>
+        <input type="text" id="filename-input" placeholder="File Name" value="main" />
+        <button id="download-btn" onclick="downloadCode()">Download</button>
+        <button id="install-btn">Install</button>
+        <button id="reset-btn">Reset Editor</button>
+      </div>
     </div>
+    <div id="editor-container">
+      <div id="monaco-editor"></div>
+    </div>
+    <div class="status-bar" id="status-bar">Loading editor... <div id="save-status" class="save-status">Saving...</div></div>
+  </div>
+  <div class="toast" id="toast"></div>
 
-    <div class="toast" id="toast"></div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.40.0/min/vs/loader.min.js"></script>
-    <script src="/js/main.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-    <script>
-        eruda.init();
-    </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.40.0/min/vs/loader.min.js"></script>
+  <script src="/js/main.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+  <script>eruda.init();</script>
 </body>
 </html>
