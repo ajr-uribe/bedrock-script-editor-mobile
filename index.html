@@ -1,57 +1,51 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta property="og:title" content="MCBE Script Editor">
-  <meta property="og:description" content="Minecraft bedrock Editor for easily making Scripts with auto-completions">
-  <meta property="og:image" content="https://res.cloudinary.com/dchi3dtvc/image/upload/favicon_xngegt.png">
-  <meta property="og:url" content="https://ajr-uribe-editor.vercel.app"> 
-  <meta property="og:type" content="website"> 
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <link rel="manifest" href="/manifest.json">
-  <link rel="icon" href="./icons/favicon.png">
-  <meta name="theme-color" content="#2b2f34">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <title>MCBE Scripts Editor</title>
-  <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MCBE Script Editor</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" defer></script>
+  <script src="main.js" defer></script>
 </head>
 <body>
-  <button class="min-toolbar-btn" id="min-btn" onclick="minToolbar()">🧩 Close Toolbar 🧩</button>
   <div id="app">
-    <div id="header">
-      <h1><img src="./icons/favicon.png" id="icon">Bedrock Scripts Editor</h1>
+    <header id="header">
+      <h1>MCBE Script Editor</h1>
+
       <div id="toolbar">
-        <select id="module-select">
+        <select id="module-select" data-last-value="server" aria-label="Seleccionar módulo">
           <option value="server">@minecraft/server</option>
           <option value="server-ui">@minecraft/server-ui</option>
           <option value="server-gametest">@minecraft/server-gametest</option>
         </select>
-        <input id="version-input" type="text" placeholder="e.g. 2.0.0" value="2.0.0" />
-        <button id="load-types-btn">Cargar Tipos</button>
-        <button id="run-btn" onclick="executeAction()">Execute (Soon)</button>
-        <button id="copy-btn">Copy</button>
-        <input type="text" id="filename-input" placeholder="File Name" value="main">
-        <button id="download-btn" onclick="downloadCode()">Download</button>
-        <button id="install-btn" onclick="InstallApp()">Install</button>
-        <button id="reset-btn">Reset Editor</button>
+
+        <input
+          type="text"
+          id="module-version"
+          placeholder="Versión (ej. 2.0.0)"
+          aria-label="Versión del módulo"
+          style="width: 100px; padding: 5px; border-radius: 4px; border: 1px solid #555; background: #333; color: #d4d4d4;"
+        />
+
+        <button id="load-types-btn" title="Cargar tipos de módulo dinámicamente">Cargar tipos</button>
+
+        <input type="text" id="filename-input" placeholder="Nombre archivo" aria-label="Nombre del archivo" />
+
+        <button id="copy-btn" title="Copiar código al portapapeles">Copiar</button>
+        <button id="download-btn" title="Descargar archivo .js">Descargar</button>
+        <button id="reset-btn" title="Reiniciar editor">Reiniciar</button>
+        <button id="install-btn" title="Instalar aplicación PWA" disabled>Instalar</button>
       </div>
-    </div>
+    </header>
+
     <div id="editor-container">
-      <div id="monaco-editor"></div>
+      <div id="monaco-editor" role="main" aria-label="Editor de código"></div>
     </div>
-    <div class="status-bar" id="status-bar">
-      Loading editor...
-      <div id="save-status" class="save-status">Saving...</div>
-    </div>
+
+    <div class="status-bar" id="status-bar" aria-live="polite" aria-atomic="true"></div>
+    <div class="toast" id="toast" role="alert" aria-live="assertive" aria-atomic="true"></div>
+    <div class="save-status" id="save-status">Guardado ✔</div>
   </div>
-
-  <div class="toast" id="toast"></div>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.40.0/min/vs/loader.min.js"></script>
-  <script src="/js/main.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-  <script>eruda.init();</script>
 </body>
 </html>
