@@ -285,18 +285,19 @@ function configureMonaco() {
     });
 }
 
-// ===== CREAR EL EDITOR =====
-function createEditor() {
-    const initialContent = loadSavedState();
+// ===== CREAR EL EDITOR =====function createEditor() {
+    // Cargar contenido guardado o usar cadena vacía
+    const initialContent = loadSavedState() || '';
     
+    // Configuración del editor
     const editorInstance = monaco.editor.create(document.getElementById('monaco-editor'), {
         value: initialContent,
         language: 'typescript',
         theme: 'vs-dark',
         automaticLayout: true,
-        minimap: { 
+        minimap: {
             enabled: true,
-            maxColumn: 80
+            maxColumn: 100
         },
         fontSize: 14,
         lineHeight: 24,
@@ -310,23 +311,49 @@ function createEditor() {
         autoClosingQuotes: 'always',
         formatOnPaste: true,
         formatOnType: true,
-        suggestOnTriggerCharacters: true,
-        wordBasedSuggestions: true,
+        wordWrap: 'on',
+        wrappingIndent: 'indent',
+        fontFamily: "'Courier New', monospace",
+        scrollBeyondLastColumn: 5,
         quickSuggestions: {
             other: true,
             comments: false,
             strings: true
+        },
+        suggestOnTriggerCharacters: true,
+        wordBasedSuggestions: true
+    });
+
+    // Manejo especial de teclado para asegurar que el backspace funcione
+    editorInstance.onKeyDown((e) => {
+        const allowedKeys = [
+            'Backspace', 'Delete', 
+            'ArrowLeft', 'ArrowRight', 
+            'ArrowUp', 'ArrowDown',
+            'Home', 'End',
+            'PageUp', 'PageDown'
+        ];
+        
+        if (allowedKeys.includes(e.code)) {
+            e.stopPropagation();
         }
     });
 
-    // Configurar resaltado de sintaxis para MCBE
-    monaco.languages.typescript.typescriptDefaults.setDiagnosticsOptions({
-        noSemanticValidation: false,
-        noSyntaxValidation: false,
-        diagnosticCodesToIgnore: [1375, 1378] // Ignorar errores de importación
-    });
+    // Enfocar el editor después de un pequeño retraso
+    setTimeout(() => {
+        editorInstance.focus();
+        
+        // Mover cursor al final si hay contenido
+        if (initialContent.length > 0) {
+            const lineCount = editorInstance.getModel().getLineCount();
+            const lastLine = editorInstance.getModel().getLineContent(lineCount);
+            editorInstance.setPosition({
+                lineNumber: lineCount,
+                column: lastLine.length + 1
+            });
+        }
+    }, 300);
 
-    setTimeout(() => editorInstance.focus(), 300);
     return editorInstance;
 }
 
@@ -774,21 +801,70 @@ function downloadCode() {
         showToast('Error al descargar: ' + error.message, true);
     }
 }
-
 function resetEditor() {
-    if (!editor) return;
+    if (!editor) {
+        console.error('Editor no está inicializado');
+        return;
+    }
 
-    if (confirm('¿Seguro que quieres reiniciar el editor? Se perderán los cambios no guardados.')) {
-        localStorage.removeItem(STORAGE_KEY);
-        localStorage.removeItem(STORAGE_FILENAME_KEY);
-        editor.setValue('');
+    const confirmed = confirm('¿Seguro que quieres reiniciar el editor? Se perderán todos los cambios no guardados.');
+    if (!confirmed) return;
+
+    try {
+        // Obtener el modelo del editor
+        const model = editor.getModel();
         
-        const filenameInput = document.getElementById('filename-input');
-        if (filenameInput) {
-            filenameInput.value = 'main';
+        // Crear un rango que cubra todo el contenido
+        const fullRange = model.getFullModelRange();
+        
+        // Ejecutar la operación de reset en el próximo tick del event loop
+        setTimeout(() => {
+            // 1. Realizar la operación de edición para borrar todo
+            model.pushEditOperations(
+                [], // No hay selecciones previas
+                [{
+                    range: fullRange,
+                    text: ''
+                }],
+                () => [] // Callback para transformar selecciones (no necesario aquí)
+            );
+            
+            // 2. Resetear el historial de undo/redo
+            model.setEOL(monaco.editor.EndOfLineSequence.LF);
+            model.pushStackElement();
+            
+            // 3. Mover el cursor a la posición inicial
+            editor.setPosition({ lineNumber: 1, column: 1 });
+            editor.focus();
+            
+            // 4. Limpiar el almacenamiento local
+            localStorage.removeItem(STORAGE_KEY);
+            localStorage.removeItem(STORAGE_FILENAME_KEY);
+            
+            // 5. Resetear el nombre del archivo
+            const filenameInput = document.getElementById('filename-input');
+            if (filenameInput) {
+                filenameInput.value = 'main';
+                localStorage.setItem(STORAGE_FILENAME_KEY, 'main');
+            }
+            
+            // 6. Mostrar confirmación
+            showToast('Editor reiniciado correctamente', false);
+            console.log('Editor reiniciado completamente');
+            
+        }, 0); // Timeout mínimo para asegurar ejecución después de eventos pendientes
+        
+    } catch (error) {
+        console.error('Error al reiniciar el editor:', error);
+        showToast('Error al reiniciar el editor', true);
+        
+        // Fallback: método alternativo si el anterior falla
+        try {
+            editor.setValue('');
+            editor.focus();
+        } catch (fallbackError) {
+            console.error('Fallback también falló:', fallbackError);
         }
-        
-        showToast('Editor reiniciado. Archivo limpio.', false);
     }
 }
 
