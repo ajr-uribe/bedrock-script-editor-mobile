@@ -1,15 +1,16 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
   <meta charset="UTF-8" />
   <meta property="og:title" content="MCBE Script Editor" />
-  <meta property="og:description" content="Minecraft bedrock Editor for easily making Scripts with auto-completions" />
+  <meta property="og:description" content="Editor avanzado para scripts de Minecraft Bedrock con autocompletado y tipos" />
   <meta property="og:image" content="https://res.cloudinary.com/dchi3dtvc/image/upload/favicon_xngegt.png" />
   <meta property="og:url" content="https://ajr-uribe-editor.vercel.app" />
   <meta property="og:type" content="website" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <link rel="manifest" href="/manifest.json" />
   <link rel="icon" href="./icons/favicon.png" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
   <meta name="theme-color" content="#2b2f34" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -23,7 +24,9 @@
     id="min-btn"
     aria-label="Minimize toolbar"
     title="Minimize toolbar"
-  >🧩 Close Toolbar 🧩</button>
+  >
+    <i class="fas fa-chevron-up"></i> Ocultar Toolbar
+  </button>
 
   <main id="app" role="main" aria-label="Editor principal">
     <header id="header">
@@ -41,41 +44,44 @@
         <input
           id="version-input"
           type="text"
-          placeholder="e.g. 2.0.0"
+          placeholder="ej. 2.0.0"
           value="2.0.0"
           aria-label="Versión del módulo"
+          pattern="\d+\.\d+\.\d+"
+          title="Formato X.X.X"
         />
 
         <button id="load-types-btn" aria-label="Cargar definiciones de tipos">
-          Cargar Tipos
+          <i class="fas fa-code"></i> Cargar Tipos
         </button>
 
         <button id="run-btn" aria-label="Ejecutar acción (próximamente)">
-          Execute (Soon)
+          <i class="fas fa-play"></i> Ejecutar
         </button>
 
         <button id="copy-btn" aria-label="Copiar código">
-          Copy
+          <i class="far fa-copy"></i> Copiar
         </button>
 
         <input
           type="text"
           id="filename-input"
-          placeholder="File Name"
+          placeholder="Nombre archivo"
           value="main"
           aria-label="Nombre del archivo"
+          maxlength="50"
         />
 
         <button id="download-btn" aria-label="Descargar código">
-          Download
+          <i class="fas fa-download"></i> Descargar
         </button>
 
         <button id="install-btn" aria-label="Instalar aplicación">
-          Install
+          <i class="fas fa-download"></i> Instalar
         </button>
 
         <button id="reset-btn" aria-label="Resetear editor">
-          Reset Editor
+          <i class="fas fa-trash-alt"></i> Reiniciar
         </button>
       </div>
     </header>
@@ -85,9 +91,9 @@
     </section>
 
     <div class="status-bar" id="status-bar" aria-live="polite" aria-atomic="true">
-      Loading editor...
+      Cargando editor...
       <div id="save-status" class="save-status" role="status" aria-live="polite">
-        Saving...
+        <i class="fas fa-save"></i> Guardado
       </div>
     </div>
   </main>
