@@ -802,69 +802,16 @@ function downloadCode() {
     }
 }
 function resetEditor() {
-    if (!editor) {
-        console.error('Editor no está inicializado');
-        return;
-    }
-
-    const confirmed = confirm('¿Seguro que quieres reiniciar el editor? Se perderán todos los cambios no guardados.');
-    if (!confirmed) return;
-
-    try {
-        // Obtener el modelo del editor
-        const model = editor.getModel();
-        
-        // Crear un rango que cubra todo el contenido
-        const fullRange = model.getFullModelRange();
-        
-        // Ejecutar la operación de reset en el próximo tick del event loop
-        setTimeout(() => {
-            // 1. Realizar la operación de edición para borrar todo
-            model.pushEditOperations(
-                [], // No hay selecciones previas
-                [{
-                    range: fullRange,
-                    text: ''
-                }],
-                () => [] // Callback para transformar selecciones (no necesario aquí)
-            );
-            
-            // 2. Resetear el historial de undo/redo
-            model.setEOL(monaco.editor.EndOfLineSequence.LF);
-            model.pushStackElement();
-            
-            // 3. Mover el cursor a la posición inicial
-            editor.setPosition({ lineNumber: 1, column: 1 });
-            editor.focus();
-            
-            // 4. Limpiar el almacenamiento local
-            localStorage.removeItem(STORAGE_KEY);
-            localStorage.removeItem(STORAGE_FILENAME_KEY);
-            
-            // 5. Resetear el nombre del archivo
-            const filenameInput = document.getElementById('filename-input');
-            if (filenameInput) {
-                filenameInput.value = 'main';
-                localStorage.setItem(STORAGE_FILENAME_KEY, 'main');
-            }
-            
-            // 6. Mostrar confirmación
-            showToast('Editor reiniciado correctamente', false);
-            console.log('Editor reiniciado completamente');
-            
-        }, 0); // Timeout mínimo para asegurar ejecución después de eventos pendientes
-        
-    } catch (error) {
-        console.error('Error al reiniciar el editor:', error);
-        showToast('Error al reiniciar el editor', true);
-        
-        // Fallback: método alternativo si el anterior falla
-        try {
-            editor.setValue('');
-            editor.focus();
-        } catch (fallbackError) {
-            console.error('Fallback también falló:', fallbackError);
+    if (!editor) return;
+    
+    if (confirm('Are you sure you want to reset the editor? All unsaved changes will be lost.')) {
+        localStorage.removeItem(STORAGE_KEY);
+        localStorage.removeItem(STORAGE_FILENAME_KEY);
+        editor.setValue('');
+        if (document.getElementById('filename-input')) {
+            document.getElementById('filename-input').value = 'main';
         }
+        showToast('Editor reset. Starting with a clean file.');
     }
 }
 
