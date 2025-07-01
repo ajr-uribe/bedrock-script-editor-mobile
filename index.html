@@ -55,14 +55,6 @@
           <i class="fas fa-code"></i> Cargar Tipos
         </button>
 
-        <button id="run-btn" aria-label="Ejecutar acción (próximamente)">
-          <i class="fas fa-play"></i> Ejecutar
-        </button>
-
-        <button id="copy-btn" aria-label="Copiar código">
-          <i class="far fa-copy"></i> Copiar
-        </button>
-
         <input
           type="text"
           id="filename-input"
@@ -71,6 +63,10 @@
           aria-label="Nombre del archivo"
           maxlength="50"
         />
+
+        <button id="copy-btn" aria-label="Copiar código">
+          <i class="far fa-copy"></i> Copiar
+        </button>
 
         <button id="download-btn" aria-label="Descargar código">
           <i class="fas fa-download"></i> Descargar
@@ -100,7 +96,7 @@
 
   <div class="toast" id="toast" role="alert" aria-live="assertive"></div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.40.0/min/vs/loader.min.js"></script>
-  <script src="/js/main.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js"></script>
+  <script src="/js/main.js" type="module"></script>
 </body>
 </html>
