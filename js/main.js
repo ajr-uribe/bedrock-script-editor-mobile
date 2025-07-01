@@ -1,6 +1,6 @@
 // ===== CONSTANTES GLOBALES =====
 const APP_CONFIG = {
-    VERSION: '1.3.2',
+    VERSION: '1.4.0',
     STORAGE_KEYS: {
         CONTENT: 'mcbe_editor_content',
         FILENAME: 'mcbe_editor_filename',
@@ -10,7 +10,7 @@ const APP_CONFIG = {
     TIMINGS: {
         SAVE_DEBOUNCE: 1000,
         AUTO_SAVE: 30000,
-        CACHE_EXPIRY: 86400000 // 1 día en ms
+        CACHE_EXPIRY: 86400000
     }
 };
 
@@ -23,6 +23,7 @@ class MonacoEditorApp {
         this.isLoadingTypes = false;
         this.currentModule = 'server';
         this.currentVersion = '1.0.0';
+        this.toastTimeout = null;
     }
 
     // ===== INICIALIZACIÓN PRINCIPAL =====
@@ -37,6 +38,7 @@ class MonacoEditorApp {
             this.setupControls();
             await this.loadTypeDefinitions();
             this.showStatus('Editor listo');
+            this.updateStatusBar();
         } catch (error) {
             console.error('Error inicializando:', error);
             this.showError('Error al iniciar el editor', error);
@@ -70,7 +72,10 @@ class MonacoEditorApp {
                 require(['vs/editor/editor.main'], resolve, reject);
             };
             
-            loaderScript.onerror = reject;
+            loaderScript.onerror = (err) => {
+                console.error('Error cargando Monaco:', err);
+                reject(new Error('Failed to load Monaco Editor'));
+            };
             document.head.appendChild(loaderScript);
         });
     }
@@ -113,13 +118,27 @@ class MonacoEditorApp {
             }
         });
 
+        // Actualizar barra de estado al escribir
+        editor.onDidChangeModelContent(() => {
+            this.updateStatusBar();
+        });
+
+        editor.onDidChangeCursorPosition(() => {
+            this.updateStatusBar();
+        });
+
         return editor;
     }
 
     // ===== SISTEMA DE TIPOS =====
     async loadTypeDefinitions() {
-        if (this.isLoadingTypes) return;
+        if (this.isLoadingTypes) {
+            this.showToast('Ya se están cargando tipos...', false);
+            return false;
+        }
+
         this.isLoadingTypes = true;
+        this.updateLoadTypesButton(true);
 
         try {
             this.showStatus('Cargando definiciones de tipos...');
@@ -158,12 +177,15 @@ class MonacoEditorApp {
             localStorage.setItem(APP_CONFIG.STORAGE_KEYS.VERSION, this.currentVersion);
             
             this.showToast(`Tipos cargados: ${this.currentModule}@${this.currentVersion}`);
+            return true;
         } catch (error) {
             console.error("Error cargando tipos:", error);
             this.showToast(`Error: ${error.message}`, true);
+            return false;
         } finally {
             this.isLoadingTypes = false;
             this.updateLoadTypesButton(false);
+            this.showStatus('Editor listo');
         }
     }
 
@@ -179,7 +201,9 @@ class MonacoEditorApp {
             const url = `https://cdn.jsdelivr.net/npm/${module}@${version}/index.d.ts`;
             const response = await fetch(url);
             
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
 
             let content = await response.text();
             content = content.replace(
@@ -187,7 +211,11 @@ class MonacoEditorApp {
                 `from '@minecraft/$1'`
             );
             
-            this.typeCache[cacheKey] = { content, timestamp: Date.now() };
+            this.typeCache[cacheKey] = {
+                content,
+                timestamp: Date.now()
+            };
+            
             return content;
         } catch (error) {
             if (retries > 0) {
@@ -254,6 +282,8 @@ class MonacoEditorApp {
             
             document.getElementById('module-select').value = lastModule;
             document.getElementById('version-input').value = lastVersion;
+            this.currentModule = lastModule;
+            this.currentVersion = lastVersion;
             
             return { content, filename };
         } catch (error) {
@@ -304,9 +334,12 @@ class MonacoEditorApp {
 
     // ===== PWA =====
     setupPWA() {
+        // Service Worker
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('/sw.js')
                 .then(reg => {
+                    console.log('Service Worker registrado:', reg.scope);
+                    
                     reg.addEventListener('updatefound', () => {
                         const newWorker = reg.installing;
                         newWorker.addEventListener('statechange', () => {
@@ -315,9 +348,11 @@ class MonacoEditorApp {
                             }
                         });
                     });
-                });
+                })
+                .catch(err => console.error('Error registrando Service Worker:', err));
         }
 
+        // Install Prompt
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             this.deferredPrompt = e;
@@ -327,7 +362,40 @@ class MonacoEditorApp {
         window.addEventListener('appinstalled', () => {
             this.deferredPrompt = null;
             this.updateInstallButton();
+            this.showToast('App instalada correctamente');
         });
+
+        // Verificar si ya está instalada
+        this.updateInstallButton();
+    }
+
+    updateInstallButton() {
+        const installBtn = document.getElementById('install-btn');
+        if (!installBtn) return;
+
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+        
+        if (isStandalone) {
+            installBtn.style.display = 'none';
+        } else if (this.deferredPrompt) {
+            installBtn.style.display = 'block';
+            installBtn.disabled = false;
+        } else {
+            installBtn.style.display = 'none';
+        }
+    }
+
+    async installApp() {
+        if (this.deferredPrompt) {
+            this.deferredPrompt.prompt();
+            const { outcome } = await this.deferredPrompt.userChoice;
+            if (outcome === 'accepted') {
+                this.showToast('Instalación en progreso...');
+            }
+            this.deferredPrompt = null;
+        } else {
+            this.showToast('La app ya está instalada o no se puede instalar', true);
+        }
     }
 
     // ===== UI/CONTROLES =====
@@ -364,42 +432,6 @@ class MonacoEditorApp {
         
         setTimeout(() => URL.revokeObjectURL(url), 100);
         this.showToast(`Descargado: ${filename}.js`);
-    }
-
-    installApp() {
-        if (this.deferredPrompt) {
-            this.deferredPrompt.prompt();
-            this.deferredPrompt.userChoice.then(choice => {
-                if (choice.outcome === 'accepted') {
-                    this.showToast('Instalación en progreso...');
-                }
-                this.deferredPrompt = null;
-                this.updateInstallButton();
-            });
-        } else {
-            this.showToast('La app ya está instalada o no se puede instalar', true);
-        }
-    }
-
-    updateInstallButton() {
-        const installBtn = document.getElementById('install-btn');
-        if (!installBtn) return;
-
-        const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-        
-        if (isStandalone) {
-            installBtn.innerHTML = '<i class="fas fa-check-circle"></i> Instalada';
-            installBtn.classList.add('installed');
-            installBtn.disabled = true;
-        } else if (this.deferredPrompt) {
-            installBtn.innerHTML = '<i class="fas fa-download"></i> Instalar App';
-            installBtn.classList.add('available');
-            installBtn.disabled = false;
-        } else {
-            installBtn.innerHTML = '<i class="fas fa-download"></i> Instalar';
-            installBtn.classList.remove('available', 'installed');
-            installBtn.disabled = true;
-        }
     }
 
     toggleToolbar() {
@@ -440,6 +472,23 @@ class MonacoEditorApp {
         if (statusBar) statusBar.textContent = message;
     }
 
+    updateStatusBar() {
+        if (!this.editor) return;
+        const statusBar = document.getElementById('status-bar');
+        if (!statusBar) return;
+
+        const position = this.editor.getPosition();
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+        const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+        const isOnline = navigator.onLine;
+        
+        statusBar.textContent = `Ln ${position.lineNumber}, Col ${position.column} | ${
+            isStandalone ? 'App' : 'Web'} ${isMobile ? 'Mobile' : 'Desktop'} | ${
+            isOnline ? 'Online' : 'Offline'} | v${APP_CONFIG.VERSION}`;
+        
+        statusBar.classList.toggle('offline', !isOnline);
+    }
+
     showError(title, error) {
         console.error(title, error);
         this.showToast(`${title}: ${error.message}`, true);
@@ -449,7 +498,6 @@ class MonacoEditorApp {
         const indicator = document.getElementById('save-status');
         if (indicator) {
             indicator.style.display = 'block';
-            indicator.innerHTML = '<i class="fas fa-save"></i> Guardado';
             setTimeout(() => indicator.style.display = 'none', 2000);
         }
     }
@@ -473,4 +521,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Ajustar altura en redimensionamiento
     window.addEventListener('resize', () => app.adjustEditorHeight());
+    window.addEventListener('online', () => app.updateStatusBar());
+    window.addEventListener('offline', () => app.updateStatusBar());
 });
