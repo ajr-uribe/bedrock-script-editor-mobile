@@ -1,5 +1,5 @@
-const CORE_CACHE = 'mcbe-core-v5';
-const MONACO_CACHE = 'mcbe-monaco-v5';
+const CORE_CACHE = 'mcbe-core-v6';
+const MONACO_CACHE = 'mcbe-monaco-v6';
 
 const CORE_ASSETS = [
   '/',
