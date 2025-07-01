@@ -1,8 +1,8 @@
 {
-  "name": "MCBE Script Editor Preview",
-  "short_name": "MCBE Editor Beta",
+  "name": "MCBEDITOR Preview Rework",
+  "short_name": "MCBEDITOR Rework",
   "description": "Minecraft Bedrock Script Editor",
-  "start_url": "/?source=pwa&&?version=beta",
+  "start_url": "/?source=pwa&&?version=beta-rework",
   "display": "standalone",
   "theme_color": "#6deb8d",
   "background_color": "#1e1e1e",
