@@ -100,7 +100,8 @@ function configureMonaco() {
         }
 
         const loaderScript = document.createElement('script');
-        loaderScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.40.0/min/vs/loader.min.js';
+        loaderScript.src =
+        'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js';
         loaderScript.onload = () => {
             require.config({
                 paths: {
