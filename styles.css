@@ -10,8 +10,8 @@
   --border-color: #333;
   --text-color: #d4d4d4;
   --text-muted: #858585;
-  --status-online: #4CAF50;
-  --status-offline: #f44336;
+  --status-online: #00ff00;
+  --status-offline: #FFBF00;
 }
 
 * {
@@ -151,7 +151,8 @@ input:focus {
 
 .status-bar {
   padding: 0.4rem 1rem;
-  background: var(--success-color);
+  background: var(--status-online);
+  color: black;
   font-size: 0.8rem;
   font-weight: 500;
   display: flex;
@@ -159,7 +160,8 @@ input:focus {
 }
 
 .status-bar.offline {
-  background: var(--error-color);
+  background: var(--status-offline);
+  color: white;
 }
 
 .toast {
