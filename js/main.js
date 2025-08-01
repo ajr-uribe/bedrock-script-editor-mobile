@@ -20,7 +20,6 @@ class MonacoEditorApp {
         this.deferredPrompt = null;
         this.saveTimeout = null;
         this.typeCache = {};
-        this.isLoadingTypes = false;
         this.currentModule = 'server';
         this.currentVersion = '1.0.0';
         this.toastTimeout = null;
@@ -134,6 +133,8 @@ class MonacoEditorApp {
 
     // ===== SISTEMA DE TIPOS =====
     async loadTypeDefinitions() {
+        let isLoadingTypes = false;
+        
         if (this.isLoadingTypes) {
             this.showToast('Ya se están cargando tipos...', false);
             return false;
