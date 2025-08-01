@@ -278,7 +278,7 @@ class MonacoEditorApp {
 
             const lastModule = localStorage.getItem(APP_CONFIG.STORAGE_KEYS.MODULE) || 'server';
             const lastVersion = localStorage.getItem(APP_CONFIG.STORAGE_KEYS.VERSION) || 
-                              (lastModule === 'server' ? '1.0.0' : '1.1.0');
+                              (lastModule === 'server' ? '2.0.0' : '2.0.0');
             
             document.getElementById('module-select').value = lastModule;
             document.getElementById('version-input').value = lastVersion;
