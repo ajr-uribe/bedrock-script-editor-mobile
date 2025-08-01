@@ -10,7 +10,7 @@
   --border-color: #333;
   --text-color: #d4d4d4;
   --text-muted: #858585;
-  --status-online: #00ff00;
+  --status-online: #4CAF50;
   --status-offline: #FFBF00;
 }
 
@@ -161,7 +161,6 @@ input:focus {
 
 .status-bar.offline {
   background: var(--status-offline);
-  color: white;
 }
 
 .toast {
