@@ -105,7 +105,7 @@ function configureMonaco() {
         loaderScript.onload = () => {
             require.config({
                 paths: {
-                    'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.40.0/min/vs'
+                    'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs'
                 },
                 waitSeconds: 30
             });
@@ -114,9 +114,9 @@ function configureMonaco() {
                 getWorkerUrl: function(moduleId, label) {
                     return `data:text/javascript;charset=utf-8,${encodeURIComponent(`
                         self.MonacoEnvironment = {
-                        baseUrl: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.40.0/min/'
+                        baseUrl: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/'
                         };
-                        importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.40.0/min/vs/base/worker/workerMain.js');
+                        importScripts('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/base/worker/workerMain.js');
                         `)}`;
                 }
             };
