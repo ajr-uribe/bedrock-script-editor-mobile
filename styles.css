@@ -152,7 +152,7 @@ input:focus {
 .status-bar {
   padding: 0.4rem 1rem;
   background: var(--status-online);
-  color: black;
+  color: #4c4c4c;
   font-size: 0.8rem;
   font-weight: 500;
   display: flex;
