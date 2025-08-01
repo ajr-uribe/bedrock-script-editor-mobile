@@ -1,19 +1,19 @@
 {
-  "name": "MCBEDITOR Preview Rework",
-  "short_name": "MCBEDITOR Rework",
+  "name": "MCBEDITOR v1.4",
+  "short_name": "MCBEDITOR v1.4",
   "description": "Minecraft Bedrock Script Editor",
-  "start_url": "/?source=pwa&&?version=beta-rework",
+  "start_url": "/?source=pwa&&?version=latest",
   "display": "standalone",
   "theme_color": "#6deb8d",
   "background_color": "#1e1e1e",
   "icons": [
     {
-      "src": "icons/icon_beta.png",
+      "src": "icons/favicon.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "icons/icon_beta.png",
+      "src": "icons/favicon.png",
       "sizes": "512x512",
       "type": "image/png"
     }
