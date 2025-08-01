@@ -168,7 +168,30 @@ function createEditor() {
             suggestOnTriggerCharacters: true,
             wordBasedSuggestions: true
         });
-
+        
+        // Key down 
+        editor.onKeyDown((e) => {
+            if (e.code === 'Backspace') {
+                const selection = editor.getSelection();
+                const model = editor.getModel();
+                const lineContent = model.getLineContent(selection.positionLineNumber);
+                const charBeforeCursor = lineContent.charAt(selection.positionColumn - 2);
+                
+                if (/[\/_\-+&(){}\[\]]/.test(charBeforeCursor)) {
+                    e.preventDefault();
+                    editor.executeEdits('backspace', [{
+                        range: new monaco.Range(
+                            selection.positionLineNumber,
+                            selection.positionColumn - 1,
+                            selection.positionLineNumber,
+                            selection.positionColumn
+                        ),
+                        text: '',
+                    }]);
+                }
+            }
+        });
+        
     // Enfocar el editor después de un pequeño retraso
     setTimeout(() => {
         editorInstance.focus();
