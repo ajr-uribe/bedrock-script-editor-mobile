@@ -1,6 +1,6 @@
 // ===== CONSTANTES GLOBALES =====
 const APP_CONFIG = {
-    VERSION: '1.4.0',
+    VERSION: '1.4.0.2',
     STORAGE_KEYS: {
         CONTENT: 'mcbe_editor_content',
         FILENAME: 'mcbe_editor_filename',
