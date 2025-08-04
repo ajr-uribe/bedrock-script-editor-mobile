@@ -146,11 +146,7 @@ class MonacoEditorApp {
             const versionInput = document.getElementById('version-input');
             
             this.currentModule = moduleSelect.value;
-            this.currentVersion = versionInput.value.trim();
-
-            if (!/^\d+\.\d+\.\d+$/.test(this.currentVersion)) {
-                throw new Error('Formato de versión inválido. Use X.X.X');
-            }
+            this.currentVersion = versionInput.value.trim()
 
             const modulesToLoad = this.getModulesToLoad(this.currentModule);
             const typeDefs = await Promise.all(
