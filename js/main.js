@@ -148,6 +148,10 @@ class MonacoEditorApp {
             this.currentModule = moduleSelect.value;
             this.currentVersion = versionInput.value.trim()
 
+            if (!/^[a-zA-Z0-9\.\-]+$/.test(this.currentVersion)) {
+    throw new Error('La versión contiene caracteres inválidos');
+        }
+
             const modulesToLoad = this.getModulesToLoad(this.currentModule);
             const typeDefs = await Promise.all(
                 modulesToLoad.map(mod => 
