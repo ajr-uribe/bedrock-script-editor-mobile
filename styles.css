@@ -394,3 +394,212 @@ input:focus {
     display: none;
   }
 }
+
+/* ==================== */
+/* PANEL DE CONFIGURACIÓN */
+/* ==================== */
+
+#config-btn {
+  background: #555;
+  transition: all 200ms ease;
+}
+
+#config-btn:hover {
+  background: #666;
+}
+
+#config-panel {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--header-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1.5rem;
+  width: 90%;
+  max-width: 420px;
+  z-index: 1100;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+  color: var(--text-color);
+  display: none;
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+
+#config-panel.show {
+  display: block;
+  opacity: 1;
+}
+
+#config-panel h3 {
+  margin: 0 0 1.5rem 0;
+  color: white;
+  font-size: 1.3rem;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding-bottom: 0.8rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.config-group {
+  margin-bottom: 1.2rem;
+}
+
+.config-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+  color: var(--text-color);
+  font-weight: 500;
+}
+
+.config-group select {
+  width: 100%;
+  padding: 0.6rem 0.8rem;
+  background: #333;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  color: white;
+  font-size: 0.95rem;
+}
+
+.config-group input[type="number"] {
+  width: 100%;
+  padding: 0.6rem 0.8rem;
+  background: #333;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  color: white;
+}
+
+.config-group input[type="checkbox"] {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  background: #333;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  vertical-align: middle;
+  position: relative;
+  margin-right: 0.6rem;
+  cursor: pointer;
+}
+
+.config-group input[type="checkbox"]:checked {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.config-group input[type="checkbox"]:checked::after {
+  content: "✓";
+  position: absolute;
+  color: white;
+  font-size: 0.9rem;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+#apply-config {
+  width: 100%;
+  padding: 0.8rem;
+  margin-top: 1rem;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-weight: 500;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 200ms ease;
+}
+
+#apply-config:hover {
+  background: #006bb3;
+  transform: translateY(-2px);
+}
+
+#apply-config:active {
+  transform: translateY(0);
+}
+
+/* Footer con enlaces */
+.config-footer {
+  margin-top: 1.5rem;
+  padding-top: 1.2rem;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.config-footer a {
+  color: #a0c4ff;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  font-size: 0.9rem;
+  transition: color 200ms ease;
+}
+
+.config-footer a:hover {
+  color: #70a1ff;
+  text-decoration: underline;
+}
+
+.config-footer a i {
+  font-size: 1.2rem;
+  width: 20px;
+  text-align: center;
+}
+
+/* Overlay */
+.config-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 1000;
+  display: none;
+  backdrop-filter: blur(3px);
+}
+
+.config-overlay.show {
+  display: block;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  #config-panel {
+    width: 95%;
+    padding: 1.2rem;
+  }
+  
+  #config-panel h3 {
+    font-size: 1.1rem;
+  }
+  
+  .config-group label {
+    font-size: 0.9rem;
+  }
+  
+  .config-group select,
+  .config-group input[type="number"] {
+    padding: 0.5rem 0.7rem;
+    font-size: 0.9rem;
+  }
+  
+  #apply-config {
+    padding: 0.7rem;
+    font-size: 0.95rem;
+  }
+  
+  .config-footer a {
+    font-size: 0.85rem;
+  }
+}
