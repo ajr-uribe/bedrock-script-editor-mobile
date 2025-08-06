@@ -412,7 +412,6 @@ input:focus {
   position: fixed;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
   background: var(--header-bg);
   border: 1px solid var(--border-color);
   border-radius: 8px;
