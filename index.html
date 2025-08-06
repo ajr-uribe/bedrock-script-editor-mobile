@@ -69,47 +69,48 @@ Bedrock Scripts Editor
 <div id="monaco-editor" aria-label="Editor de código"></div>
 </section>
 
-<div id="config-panel" class="config-panel" aria-hidden="true">
+<div id="config-panel" class="config-panel">
     <h3><i class="fas fa-cog"></i> Configuración del Editor</h3>
     
     <div class="config-group">
-        <label for="theme-select">Tema:</label>
+        <label for="theme-select">Tema del editor:</label>
         <select id="theme-select">
             <option value="vs">Claro (VS)</option>
-            <option value="vs-dark">Oscuro (VS Dark)</option>
+            <option value="vs-dark" selected>Oscuro (VS Dark)</option>
             <option value="hc-black">Alto Contraste</option>
         </select>
     </div>
     
     <div class="config-group">
-        <label for="font-size">Tamaño de fuente:</label>
+        <label for="font-size">Tamaño de fuente (px):</label>
         <input type="number" id="font-size" min="10" max="24" value="14">
     </div>
     
     <div class="config-group">
         <label>
-            <input type="checkbox" id="word-wrap"> Word Wrap
+            <input type="checkbox" id="word-wrap"> Ajuste de línea (Word Wrap)
         </label>
     </div>
     
     <div class="config-group">
         <label>
-            <input type="checkbox" id="minimap" checked> Mostrar Minimapa
+            <input type="checkbox" id="minimap" checked> Mostrar minimapa
         </label>
     </div>
     
-    <button id="apply-config" class="btn-primary">Aplicar Cambios</button>
+    <button id="apply-config" class="btn-primary">
+        <i class="fas fa-check"></i> Aplicar Cambios
+    </button>
     
-    <div class="panel-footer-links">
-        <a href="https://discord.gg/UNvQCGNmhj" class="panel-link" target="_blank" rel="noopener noreferrer">
-            <i class="fab fa-discord"></i> Soporte en Discord
+    <div class="config-footer">
+        <a href="https://discord.gg/UNvQCGNmhj" target="_blank" rel="noopener noreferrer">
+            <i class="fab fa-discord"></i> Support
         </a>
-        
-        <a href="https://discord.gg/5SuwDnSwDW" class="panel-link" target="_blank" rel="noopener noreferrer">
-            <i class="fab fa-discord"></i> ScriptLabs Discord
-        </a>
-        
         <!-- Puedes agregar más enlaces aquí -->
+        <a href="https://discord.gg/5SuwDnSwDW" target="_blank" rel="noopener noreferrer">
+            <i class="fab fa-discord"></i> 
+            ScriptLabs Discord
+        </a>
     </div>
 </div>
 
