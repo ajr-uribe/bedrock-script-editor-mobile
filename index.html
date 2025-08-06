@@ -36,7 +36,7 @@ Bedrock Scripts Editor
 <option value="server-gametest">@minecraft/server-gametest</option>
 </select>
 
-<input id="version-input" type="text" placeholder="ej. 2.0.0" value="2.0.0" aria-label="Versión del módulo" pattern="\d+\.\d+\.\d+" title="Formato X.X.X" />
+<input id="version-input" type="text" placeholder="ej. 1.0.0" value="1.0.0" aria-label="Versión del módulo" pattern="\d+\.\d+\.\d+" title="Formato X.X.X" />
 
 <button id="load-types-btn" aria-label="Cargar definiciones de tipos">
 <i class="fas fa-code"></i> Cargar Tipos
@@ -59,60 +59,12 @@ Bedrock Scripts Editor
 <button id="reset-btn" aria-label="Resetear editor">
 <i class="fas fa-trash-alt"></i> Reiniciar
 </button>
-<button id="config-btn" aria-label="Configuración del editor" title="Configuración" class="toolbar-btn">
-    <i class="fas fa-cog"></i> │ Configuración
-</button>
 </div>
 </header>
 
 <section id="editor-container">
 <div id="monaco-editor" aria-label="Editor de código"></div>
 </section>
-
-<div id="config-panel" class="config-panel">
-    <h3><i class="fas fa-cog"></i> Configuración del Editor</h3>
-    
-    <div class="config-group">
-        <label for="theme-select">Tema del editor:</label>
-        <select id="theme-select">
-            <option value="vs">Claro (VS)</option>
-            <option value="vs-dark" selected>Oscuro (VS Dark)</option>
-            <option value="hc-black">Alto Contraste</option>
-        </select>
-    </div>
-    
-    <div class="config-group">
-        <label for="font-size">Tamaño de fuente (px):</label>
-        <input type="number" id="font-size" min="10" max="24" value="14">
-    </div>
-    
-    <div class="config-group">
-        <label>
-            <input type="checkbox" id="word-wrap"> Ajuste de línea (Word Wrap)
-        </label>
-    </div>
-    
-    <div class="config-group">
-        <label>
-            <input type="checkbox" id="minimap" checked> Mostrar minimapa
-        </label>
-    </div>
-    
-    <button id="apply-config" class="btn-primary">
-        <i class="fas fa-check"></i> Aplicar Cambios
-    </button>
-    
-    <div class="config-footer">
-        <a href="https://discord.gg/UNvQCGNmhj" target="_blank" rel="noopener noreferrer">
-            <i class="fab fa-discord"></i> Support
-        </a>
-        <!-- Puedes agregar más enlaces aquí -->
-        <a href="https://discord.gg/5SuwDnSwDW" target="_blank" rel="noopener noreferrer">
-            <i class="fab fa-discord"></i> 
-            ScriptLabs Discord
-        </a>
-    </div>
-</div>
 
 <div class="status-bar" id="status-bar" aria-live="polite" aria-atomic="true">
 Cargando editor...
