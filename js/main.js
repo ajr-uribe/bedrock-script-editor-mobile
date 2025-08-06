@@ -1,26 +1,17 @@
 // ===== CONSTANTES GLOBALES =====
 const APP_CONFIG = {
-    VERSION: '1.4.0.3',
+    VERSION: '1.4.0.2',
     STORAGE_KEYS: {
         CONTENT: 'mcbe_editor_content',
         FILENAME: 'mcbe_editor_filename',
         MODULE: 'mcbe_editor_module',
-        VERSION: 'mcbe_editor_version',
-        EDITOR_CONFIG: 'mcbe_editor_config'
+        VERSION: 'mcbe_editor_version'
     },
     TIMINGS: {
         SAVE_DEBOUNCE: 1000,
         AUTO_SAVE: 30000,
         CACHE_EXPIRY: 86400000
     }
-};
-
-let editorConfig = {
-    theme: 'vs-dark',
-    fontSize: 14,
-    wordWrap: true,
-    minimap: false,
-    lineNumbers: 'on'
 };
 
 class MonacoEditorApp {
@@ -45,7 +36,6 @@ class MonacoEditorApp {
             this.loadPersistentState();
             this.setupPWA();
             this.setupControls();
-            this.setupConfigPanel();
             await this.loadTypeDefinitions();
             this.showStatus('Editor listo');
             this.updateStatusBar();
@@ -54,18 +44,6 @@ class MonacoEditorApp {
             this.showError('Error al iniciar el editor', error);
         }
     }
-    
-    setupConfigPanel() {
-    document.getElementById('config-btn').addEventListener('click', () => this.toggleConfigPanel());
-    document.getElementById('apply-config').addEventListener('click', () => this.applyEditorConfig());
-    
-    // Cargar configuración guardada
-    const savedConfig = localStorage.getItem(APP_CONFIG.STORAGE_KEYS.EDITOR_CONFIG);
-    if (savedConfig) {
-        Object.assign(editorConfig, JSON.parse(savedConfig));
-        this.applyEditorConfig(false);
-    }
-}
 
     // ===== CONFIGURACIÓN MONACO EDITOR =====
     async loadMonaco() {
@@ -106,15 +84,15 @@ class MonacoEditorApp {
         const editor = monaco.editor.create(document.getElementById('monaco-editor'), {
             value: '',
             language: 'typescript',
-            theme: editorConfig.theme,
+            theme: 'vs-dark',
             automaticLayout: true,
-            minimap: { enabled: editorConfig.minimap },
-            fontSize: editorConfig.fontSize,
+            minimap: { enabled: true },
+            fontSize: 14,
             lineHeight: 24,
             autoClosingBrackets: 'languageDefined',
             autoClosingQuotes: 'languageDefined',
             formatOnType: true,
-            wordWrap: editorConfig.wordWrap
+            wordWrap: 'on'
         });
 
         // Solución robusta para Backspace
@@ -430,65 +408,10 @@ class MonacoEditorApp {
         document.getElementById('load-types-btn')?.addEventListener('click', () => this.loadTypeDefinitions());
         document.getElementById('module-select')?.addEventListener('change', (e) => {
             this.currentModule = e.target.value;
-            this.currentVersion = e.target.value === 'server-ui' ? '2.0.0' : '1.0.0';
+            this.currentVersion = e.target.value === 'server-ui' ? '1.1.0' : '1.0.0';
             document.getElementById('version-input').value = this.currentVersion;
-            document.getElementById('config-btn')?.addEventListener('click', () => this.toggleConfigPanel());
         });
     }
-    
-// ===== PANEL DE CONFIGURACIÓN ===== 
-setupConfigPanel() {
-    document.getElementById('config-btn').addEventListener('click', () => this.toggleConfigPanel());
-    document.getElementById('apply-config').addEventListener('click', () => this.applyEditorConfig());
-    
-    const savedConfig = localStorage.getItem(APP_CONFIG.STORAGE_KEYS.EDITOR_CONFIG);
-    if (savedConfig) {
-        Object.assign(editorConfig, JSON.parse(savedConfig));
-        this.applyEditorConfig(false);
-    }
-}
-
-toggleConfigPanel() {
-    const panel = document.getElementById('config-panel');
-    const overlay = document.getElementById('config-overlay');
-    
-    if (panel.style.display === 'block') {
-        panel.style.display = 'none';
-        overlay.style.display = 'none';
-    } else {
-        document.getElementById('theme-select').value = editorConfig.theme;
-        document.getElementById('font-size').value = editorConfig.fontSize;
-        document.getElementById('word-wrap').checked = editorConfig.wordWrap;
-        document.getElementById('minimap').checked = editorConfig.minimap;
-        
-        panel.style.display = 'flex';
-        overlay.style.display = 'flex';
-    }
-}
-
-applyEditorConfig(showToast = true) {
-    editorConfig = {
-        theme: document.getElementById('theme-select').value,
-        fontSize: parseInt(document.getElementById('font-size').value),
-        wordWrap: document.getElementById('word-wrap').checked,
-        minimap: document.getElementById('minimap').checked
-    };
-    
-    if (this.editor) {
-        this.editor.updateOptions({
-            theme: editorConfig.theme,
-            fontSize: editorConfig.fontSize,
-            wordWrap: editorConfig.wordWrap ? 'on' : 'off',
-            minimap: { enabled: editorConfig.minimap }
-        });
-    }
-    
-    localStorage.setItem(APP_CONFIG.STORAGE_KEYS.EDITOR_CONFIG, JSON.stringify(editorConfig));
-    
-    if (showToast) {
-        this.showToast('Configuración guardada');
-    }
-}
 
     copyCode() {
         navigator.clipboard.writeText(this.editor.getValue())
