@@ -461,8 +461,8 @@ toggleConfigPanel() {
         document.getElementById('word-wrap').checked = editorConfig.wordWrap;
         document.getElementById('minimap').checked = editorConfig.minimap;
         
-        panel.style.display = 'block';
-        overlay.style.display = 'block';
+        panel.style.display = 'flex';
+        overlay.style.display = 'flex';
     }
 }
 
