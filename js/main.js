@@ -19,7 +19,7 @@ let editorConfig = {
     theme: 'vs-dark',
     fontSize: 14,
     wordWrap: true,
-    minimap: true,
+    minimap: false,
     lineNumbers: 'on'
 };
 
