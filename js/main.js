@@ -503,17 +503,6 @@ class MonacoEditorApp {
             setTimeout(() => indicator.style.display = 'none', 2000);
         }
     }
-
-    adjustEditorHeight() {
-        const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
-        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        const app = document.getElementById('app');
-        
-        if (app) {
-            app.style.height = isStandalone && isMobile ? `${window.innerHeight}px` : '93vh';
-            app.style.marginTop = isStandalone && isMobile ? '0' : '50px';
-        }
-    }
 }
 
 // ===== INICIAR APLICACIÓN =====
@@ -522,7 +511,6 @@ document.addEventListener('DOMContentLoaded', () => {
     app.initialize();
 
     // Ajustar altura en redimensionamiento
-    window.addEventListener('resize', () => app.adjustEditorHeight());
     window.addEventListener('online', () => app.updateStatusBar());
     window.addEventListener('offline', () => app.updateStatusBar());
 });
