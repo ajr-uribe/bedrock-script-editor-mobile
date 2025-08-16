@@ -149,7 +149,7 @@ input:focus {
 }
 
 .status-bar {
-  padding: 0.4rem 1rem;
+  padding: 1rem 1rem;
   background: var(--success-color);
   font-size: 0.8rem;
   font-weight: 500;
