@@ -2,6 +2,45 @@
 <html lang="es">
 	<head>
 		<meta charset="UTF-8" />
+		<script type="application/ld+json">
+			{
+				"@context": "https://schema.org",
+				"@type": "WebApplication",
+				"name": "MCBE Script Editor",
+				"url": "https://mcbeditor.vercel.app/",
+				"description": "Editor de scripts para add-ons de Minecraft Bedrock con autocompletado de la API. Herramienta PWA para desarrolladores de mods y complementos.",
+				"applicationCategory": "DeveloperApplication",
+				"operatingSystem": "Web",
+				"creator": {
+					"@type": "Owner",
+					"name": "a.j.r._.uribe"
+				},
+				"keywords": [
+					"Minecraft Bedrock",
+					"editor scripts",
+					"API autocompletado",
+					"add-ons",
+					"desarrollo mods",
+					"add-ons",
+					"bedrock",
+					"scripts",
+					"MCBEDITOR",
+					"vercel",
+					"bridgev2",
+					"bridge",
+					"bridge v2",
+					"bedrock bedrock-script-editor-mobile",
+					"Bedrock add-ons",
+					"bedrock wiki",
+					"bedrock tools"
+				],
+				"softwareHelp": {
+					"@type": "CreativeWork",
+					"name": "Documentación del editor (opcional)",
+					"url": "https://scriptlabsmc.vercel.app/"
+				}
+			}
+		</script>
 		<meta
 			property="twitter:image"
 			content="https://raw.githubusercontent.com/ajr-uribe/bedrock-script-editor-mobile/refs/heads/editor-v1.4/icons/icon-192.webp" />
@@ -169,13 +208,18 @@
 			id="toast"
 			role="alert"
 			aria-live="assertive"></div>
-<script>
-    // Configuración global accesible
-    window.monacoConfig = {
-        loaderUrl: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js',
-        baseUrl: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs'
-    };
-</script>
-<script src="/js/main.js" type="module" defer></script>
+		<script>
+			// Configuración global accesible
+			window.monacoConfig = {
+				loaderUrl:
+					"https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js",
+				baseUrl:
+					"https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs"
+			};
+		</script>
+		<script
+			src="/js/main.js"
+			type="module"
+			defer></script>
 	</body>
 </html>
