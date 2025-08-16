@@ -92,7 +92,9 @@ class MonacoEditorApp {
             autoClosingBrackets: 'languageDefined',
             autoClosingQuotes: 'languageDefined',
             formatOnType: true,
-            wordWrap: 'on'
+            wordWrap: 'on',
+            readOnly: false,
+            domReadOnly: false
         });
 
         // Solución robusta para Backspace
