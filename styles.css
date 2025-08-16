@@ -43,7 +43,7 @@ h1 {
 #app {
   display: flex;
   flex-direction: column;
-  height: 93vh;
+  height: 100dvh;
   width: 100vw;
 }
 
@@ -387,7 +387,7 @@ input:focus {
 /* Estilos para PWA en modo standalone */
 @media (display-mode: standalone) {
   #app {
-    height: 100vh;
+    height: 100dvh;
     margin-top: 0;
   }
   
