@@ -245,6 +245,7 @@ input:focus {
 
 #load-types-btn:hover {
   background: #49AC50;
+  color: white;
 }
 
 #copy-btn {
