@@ -239,11 +239,12 @@ input:focus {
 
 /* Estilos para botones especiales */
 #load-types-btn {
-  background: #3a8c3d;
+  background: #49AC50;
+  
 }
 
 #load-types-btn:hover {
-  background: #45a049;
+  background: #49AC50;
 }
 
 #copy-btn {
@@ -274,7 +275,7 @@ input:focus {
 }
 
 #reset-btn {
-	background: #d32f2f;
+	background: #A02222;
 	color: #EEEEEE;
 }
 
