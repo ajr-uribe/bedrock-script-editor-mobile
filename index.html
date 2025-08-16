@@ -1,171 +1,181 @@
 <!doctype html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8" />
-    <!-- Metadatos SEO optimizados -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
-    <meta name="description" content="Editor avanzado para scripts de Minecraft Bedrock con autocompletado en TS/JS. Optimizado para rendimiento." />
-    <meta property="og:title" content="MCBEDITOR v1.4 (Optimizado)" />
-    <meta property="og:image" content="https://raw.githubusercontent.com/ajr-uribe/bedrock-script-editor-mobile/refs/heads/editor-v1.4/icons/icon-192.webp" />
-    <meta property="og:url" content="https://mcbeditor.vercel.app" />
-    <meta name="theme-color" content="#2b2f34" />
-    <link rel="manifest" href="/manifest.json" />
-    <link rel="icon" href="./icons/favicon.png" />
-    <title>MCBEDITOR v1.4 (TS/JS Optimizado)</title>
+	<head>
+		<meta charset="UTF-8" />
+		<meta
+			property="twitter:image"
+			content="https://raw.githubusercontent.com/ajr-uribe/bedrock-script-editor-mobile/refs/heads/editor-v1.4/icons/icon-192.webp" />
+		<meta
+			property="og:title"
+			content="MCBEDITOR v1.4" />
+		<meta
+			property="og:site_name"
+			content="MCBEDITOR v1.4" />
+		<meta
+			property="og:description"
+			content="Editor avanzado para scripts de Minecraft Bedrock con autocompletado y carga de tipos dinámica. Recibe actualizaciones constantemente y sigue en desarrollo por: a.j.r._.uribe" />
+		<meta
+			property="twitter:description"
+			content="Editor avanzado para scripts de Minecraft Bedrock con autocompletado y carga de tipos dinámica. Recibe actualizaciones constantemente y sigue en desarrollo por: a.j.r._.uribe" />
+		<meta
+			property="description"
+			content="Editor avanzado para scripts de Minecraft Bedrock con autocompletado y carga de tipos dinámica. Recibe actualizaciones constantemente y sigue en desarrollo por: a.j.r._.uribe" />
+		<meta
+			name="description"
+			content="Editor avanzado para scripts de Minecraft Bedrock con autocompletado y carga de tipos dinámica. Recibe actualizaciones constantemente y sigue en desarrollo por: a.j.r._.uribe" />
+		<meta
+			property="og:image"
+			content="https://raw.githubusercontent.com/ajr-uribe/bedrock-script-editor-mobile/refs/heads/editor-v1.4/icons/icon-192.webp" />
+		<meta
+			property="twitter:title"
+			content="MCBEDITOR" />
+		<meta
+			property="og:url"
+			content="https://mcbeditor.vercel.app" />
+		<meta
+			property="og:type"
+			content="website" />
+		<meta
+			name="viewport"
+			content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+		<link
+			rel="manifest"
+			href="/manifest.json" />
+		<link
+			rel="icon"
+			href="./icons/favicon.png" />
+		<!-- Versión SVG Fontawesome  -->
+		<script
+			defer
+			src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+		<meta
+			name="theme-color"
+			content="#2b2f34" />
+		<meta
+			name="mobile-web-app-capable"
+			content="yes" />
+		<meta
+			name="apple-mobile-web-app-capable"
+			content="yes" />
+		<meta
+			name="apple-mobile-web-app-status-bar-style"
+			content="black-translucent" />
+		<title>MCBEDITOR v1.4</title>
+		<link
+			rel="stylesheet"
+			href="styles.css" />
+	</head>
+	<body>
+		<main
+			id="app"
+			role="main"
+			aria-label="Editor principal">
+			<header id="header">
+				<h1>
+					<img
+						src="./icons/icon-192.webp"
+						alt="MCBE Editor logo"
+						id="icon" />
+					Bedrock Scripts Editor
+				</h1>
+				<div
+					id="toolbar"
+					role="region"
+					aria-label="Barra de herramientas">
+					<select
+						id="module-select"
+						aria-label="Seleccionar módulo">
+						<option value="server">@minecraft/server</option>
+						<option value="server-ui">@minecraft/server-ui</option>
+						<option value="server-gametest">
+							@minecraft/server-gametest
+						</option>
+					</select>
 
-    <!-- Precarga de recursos críticos -->
-    <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
-    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com" />
-    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js" as="script" crossorigin />
-    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/editor/editor.main.nls.js" as="script" crossorigin />
-    
-    <!-- FontAwesome SVG (carga diferida) -->
-    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js" as="script" />
-    
-    <!-- CSS crítico inline (opcional para LCP) -->
-    <style>
-        #app { 
-            display: flex; 
-            flex-direction: column; 
-            height: 100vh; 
-            background: #1e1e1e; 
-        }
-        #editor-container { 
-            flex: 1; 
-            position: relative; 
-        }
-        #monaco-editor { 
-            position: absolute; 
-            top: 0; 
-            left: 0; 
-            right: 0; 
-            bottom: 0; 
-        }
-        .status-bar { 
-            padding: 8px; 
-            background: #252526; 
-            color: #ccc; 
-            font-family: sans-serif; 
-        }
-    </style>
-    <link rel="stylesheet" href="styles.css" media="print" onload="this.media='all'" />
-</head>
-<body>
-    <main id="app" role="main">
-        <header id="header">
-            <h1>
-                <img src="./icons/icon-192.webp" alt="MCBE Editor" width="32" height="32" loading="lazy" />
-                Bedrock Scripts Editor
-            </h1>
-            <div id="toolbar" role="toolbar">
-                <!-- Toolbar existente (optimizado en JS) -->
-            </div>
-        </header>
+					<input
+						id="version-input"
+						type="text"
+						placeholder="ej. 1.0.0"
+						value="1.0.0"
+						aria-label="Versión del módulo"
+						pattern="\d+\.\d+\.\d+"
+						title="Formato X.X.X" />
 
-        <section id="editor-container">
-            <!-- Placeholder para CLS 0 -->
-            <div id="editor-loading" style="height:100%; display:flex; align-items:center; justify-content:center; background:#1e1e1e; color:#ccc;">
-                <p>Cargando editor Monaco...</p>
-            </div>
-            <div id="monaco-editor" style="display:none;"></div>
-        </section>
+					<button
+						id="load-types-btn"
+						aria-label="Cargar definiciones de tipos">
+						<i class="fas fa-code"></i> Cargar Tipos
+					</button>
 
-        <div class="status-bar">
-            <span id="status-text">Cargando...</span>
-            <span id="save-status" aria-live="polite"></span>
-        </div>
-    </main>
+					<input
+						type="text"
+						id="filename-input"
+						placeholder="Nombre archivo"
+						value="main"
+						aria-label="Nombre del archivo"
+						maxlength="50" />
 
-    <!-- Toast accesible (mejorado) -->
-    <div id="toast" class="toast" role="alert" aria-live="assertive" aria-atomic="true" hidden></div>
+					<button
+						id="copy-btn"
+						aria-label="Copiar código">
+						<i class="far fa-copy"></i> Copiar
+					</button>
 
-    <!-- Monaco Editor - Carga optimizada -->
-    <script>
-        // Estrategia de carga progresiva
-        function initMonaco() {
-            const startTime = performance.now();
-            
-            require.config({
-                paths: { 
-                    vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs'
-                },
-                ignoreDuplicateModules: true,
-                waitSeconds: 10
-            });
+					<button
+						id="download-btn"
+						aria-label="Descargar código">
+						<i class="fas fa-download"></i> Descargar
+					</button>
 
-            // Solo carga lo esencial para TS/JS
-            require([
-                'vs/editor/editor.main',
-                'vs/language/typescript/tsMode',
-                'vs/language/javascript/javascriptMode',
-                'vs/basic-languages/typescript/typescript',
-                'vs/basic-languages/javascript/javascript'
-            ], () => {
-                // Configuración óptima para TS
-                monaco.languages.typescript.typescriptDefaults.setCompilerOptions({
-                    target: monaco.languages.typescript.ScriptTarget.ES2020,
-                    module: monaco.languages.typescript.ModuleKind.ESNext,
-                    allowNonTsExtensions: true,
-                    lib: ['es2020']
-                });
+					<button
+						id="install-btn"
+						aria-label="Instalar aplicación"
+						style="display: none">
+						<i class="fas fa-download"></i> Instalar App
+					</button>
 
-                const editor = monaco.editor.create(document.getElementById('monaco-editor'), {
-                    value: localStorage.getItem('editor-content') || '// Escribe tu código aquí\n',
-                    language: 'typescript',
-                    theme: 'vs-dark',
-                    automaticLayout: true,
-                    minimap: { enabled: false },
-                    scrollBeyondLastLine: false,
-                    fontSize: 14,
-                    renderWhitespace: 'none',
-                    lineNumbers: 'on',
-                    roundedSelection: true,
-                    padding: { top: 10 }
-                });
+					<button
+						id="reset-btn"
+						aria-label="Resetear editor">
+						<i class="fas fa-trash-alt"></i> Reiniciar
+					</button>
+				</div>
+			</header>
 
-                // UI Finalizada
-                document.getElementById('editor-loading').style.display = 'none';
-                document.getElementById('monaco-editor').style.display = 'block';
-                document.getElementById('status-text').textContent = `Editor listo en ${(performance.now() - startTime).toFixed(0)}ms`;
+			<section id="editor-container">
+				<div
+					id="monaco-editor"
+					aria-label="Editor de código"></div>
+			</section>
 
-                // Guardar contenido automáticamente
-                editor.getModel().onDidChangeContent(() => {
-                    localStorage.setItem('editor-content', editor.getValue());
-                });
-            });
-        }
+			<div
+				class="status-bar"
+				id="status-bar"
+				aria-live="polite"
+				aria-atomic="true">
+				Cargando editor...
+				<div
+					id="save-status"
+					class="save-status"
+					role="status"
+					aria-live="polite">
+					<i class="fas fa-save"></i> Guardado
+				</div>
+			</div>
+		</main>
 
-        // Carga diferida con priorización
-        if ('requestIdleCallback' in window) {
-            window.requestIdleCallback(() => {
-                loadMonacoScript();
-            }, { timeout: 2000 });
-        } else {
-            window.addEventListener('load', loadMonacoScript);
-        }
-
-        function loadMonacoScript() {
-            const script = document.createElement('script');
-            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js';
-            script.onload = initMonaco;
-            script.onerror = () => {
-                document.getElementById('status-text').textContent = 'Error al cargar el editor';
-            };
-            document.body.appendChild(script);
-        }
-    </script>
-
-    <!-- Main.js como módulo (carga diferida) -->
-    <script defer src="/js/main.js" type="module"></script>
-
-    <!-- FontAwesome (carga diferida después de interactividad) -->
-    <script>
-        window.addEventListener('DOMContentLoaded', () => {
-            const faScript = document.createElement('script');
-            faScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js';
-            faScript.defer = true;
-            document.body.appendChild(faScript);
-        });
-    </script>
-</body>
+		<div
+			class="toast"
+			id="toast"
+			role="alert"
+			aria-live="assertive"></div>
+<script>
+    // Configuración global accesible
+    window.monacoConfig = {
+        loaderUrl: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js',
+        baseUrl: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs'
+    };
+</script>
+<script src="/js/main.js" type="module" defer></script>
+	</body>
 </html>
