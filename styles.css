@@ -375,8 +375,9 @@ input:focus {
   }
   
   .status-bar {
-    font-size: 0.7rem;
+    font-size: 1rem;
     padding: 0.3rem 0.6rem;
+    height: 25px;
   }
   
   .toast {
