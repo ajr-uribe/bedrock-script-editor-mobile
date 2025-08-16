@@ -45,7 +45,6 @@ h1 {
   flex-direction: column;
   height: 93vh;
   width: 100vw;
-  margin-top: 50px;
 }
 
 #header {
@@ -314,10 +313,6 @@ input:focus {
 }
 
 @media (max-width: 768px) {
-  #app {
-    height: calc(100vh - 50px);
-    margin-top: 50px;
-  }
   
   #header {
     padding: 0.8rem;
