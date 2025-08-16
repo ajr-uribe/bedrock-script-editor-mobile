@@ -247,19 +247,21 @@ input:focus {
 }
 
 #copy-btn {
-  background: #2196F3;
+	background: #1565C0;
+	color: #FFFFFF;
 }
 
 #copy-btn:hover {
-  background: #0b7dda;
+	background: #0b7dda;
 }
 
 #download-btn {
-  background: #673AB7;
+	background: #673ab7;
+	color: #F5F5FF;
 }
 
 #download-btn:hover {
-  background: #5e35b1;
+	background: #5e35b1;
 }
 
 #install-btn.available {
@@ -272,7 +274,8 @@ input:focus {
 }
 
 #reset-btn {
-  background: #f44336;
+	background: #f44336;
+	color: #EEEEEE;
 }
 
 #reset-btn:hover {
