@@ -1,84 +1,175 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8" />
-    <meta property="twitter:image" content="https://raw.githubusercontent.com/ajr-uribe/bedrock-script-editor-mobile/refs/heads/editor-v1.4/icons/icon-192.webp">
-<meta property="og:title" content="MCBEDITOR v1.4" />
-<meta property="og:site_name" content="MCBEDITOR v1.4">
-<meta property="og:description" content="Editor avanzado para scripts de Minecraft Bedrock con autocompletado y carga de tipos dinámica. Recibe actualizaciones constantemente y sigue en desarrollo por: a.j.r._.uribe" />
-<meta property="twitter:description" content="Editor avanzado para scripts de Minecraft Bedrock con autocompletado y carga de tipos dinámica. Recibe actualizaciones constantemente y sigue en desarrollo por: a.j.r._.uribe" />
-<meta property="description" content="Editor avanzado para scripts de Minecraft Bedrock con autocompletado y carga de tipos dinámica. Recibe actualizaciones constantemente y sigue en desarrollo por: a.j.r._.uribe" />
-<meta property="og:image" content="https://raw.githubusercontent.com/ajr-uribe/bedrock-script-editor-mobile/refs/heads/editor-v1.4/icons/icon-192.webp" />
-<meta property="twitter:title" content="MCBEDITOR">
-<meta property="og:url" content="https://mcbeditor.vercel.app" />
-<meta property="og:type" content="website" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
-<link rel="manifest" href="/manifest.json" />
-<link rel="icon" href="./icons/favicon.png" />
-<!-- Versión SVG Fontawesome  -->
-<script defer src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
-<meta name="theme-color" content="#2b2f34" />
-<meta name="mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<title>MCBEDITOR v1.4</title>
-<link rel="stylesheet" href="styles.css" />
-</head>
-<body>
-<main id="app" role="main" aria-label="Editor principal">
-<header id="header">
-<h1>
-<img src="./icons/icon-192.webp" alt="MCBE Editor logo" id="icon" />
-Bedrock Scripts Editor
-</h1>
-<div id="toolbar" role="region" aria-label="Barra de herramientas">
-<select id="module-select" aria-label="Seleccionar módulo">
-<option value="server">@minecraft/server</option>
-<option value="server-ui">@minecraft/server-ui</option>
-<option value="server-gametest">@minecraft/server-gametest</option>
-</select>
+	<head>
+		<meta charset="UTF-8" />
+		<meta
+			property="twitter:image"
+			content="https://raw.githubusercontent.com/ajr-uribe/bedrock-script-editor-mobile/refs/heads/editor-v1.4/icons/icon-192.webp" />
+		<meta
+			property="og:title"
+			content="MCBEDITOR v1.4" />
+		<meta
+			property="og:site_name"
+			content="MCBEDITOR v1.4" />
+		<meta
+			property="og:description"
+			content="Editor avanzado para scripts de Minecraft Bedrock con autocompletado y carga de tipos dinámica. Recibe actualizaciones constantemente y sigue en desarrollo por: a.j.r._.uribe" />
+		<meta
+			property="twitter:description"
+			content="Editor avanzado para scripts de Minecraft Bedrock con autocompletado y carga de tipos dinámica. Recibe actualizaciones constantemente y sigue en desarrollo por: a.j.r._.uribe" />
+		<meta
+			property="description"
+			content="Editor avanzado para scripts de Minecraft Bedrock con autocompletado y carga de tipos dinámica. Recibe actualizaciones constantemente y sigue en desarrollo por: a.j.r._.uribe" />
+		<meta
+			property="og:image"
+			content="https://raw.githubusercontent.com/ajr-uribe/bedrock-script-editor-mobile/refs/heads/editor-v1.4/icons/icon-192.webp" />
+		<meta
+			property="twitter:title"
+			content="MCBEDITOR" />
+		<meta
+			property="og:url"
+			content="https://mcbeditor.vercel.app" />
+		<meta
+			property="og:type"
+			content="website" />
+		<meta
+			name="viewport"
+			content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+		<link
+			rel="manifest"
+			href="/manifest.json" />
+		<link
+			rel="icon"
+			href="./icons/favicon.png" />
+		<!-- Versión SVG Fontawesome  -->
+		<script
+			defer
+			src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+		<meta
+			name="theme-color"
+			content="#2b2f34" />
+		<meta
+			name="mobile-web-app-capable"
+			content="yes" />
+		<meta
+			name="apple-mobile-web-app-capable"
+			content="yes" />
+		<meta
+			name="apple-mobile-web-app-status-bar-style"
+			content="black-translucent" />
+		<title>MCBEDITOR v1.4</title>
+		<link
+			rel="stylesheet"
+			href="styles.css" />
+	</head>
+	<body>
+		<main
+			id="app"
+			role="main"
+			aria-label="Editor principal">
+			<header id="header">
+				<h1>
+					<img
+						src="./icons/icon-192.webp"
+						alt="MCBE Editor logo"
+						id="icon" />
+					Bedrock Scripts Editor
+				</h1>
+				<div
+					id="toolbar"
+					role="region"
+					aria-label="Barra de herramientas">
+					<select
+						id="module-select"
+						aria-label="Seleccionar módulo">
+						<option value="server">@minecraft/server</option>
+						<option value="server-ui">@minecraft/server-ui</option>
+						<option value="server-gametest">
+							@minecraft/server-gametest
+						</option>
+					</select>
 
-<input id="version-input" type="text" placeholder="ej. 1.0.0" value="1.0.0" aria-label="Versión del módulo" pattern="\d+\.\d+\.\d+" title="Formato X.X.X" />
+					<input
+						id="version-input"
+						type="text"
+						placeholder="ej. 1.0.0"
+						value="1.0.0"
+						aria-label="Versión del módulo"
+						pattern="\d+\.\d+\.\d+"
+						title="Formato X.X.X" />
 
-<button id="load-types-btn" aria-label="Cargar definiciones de tipos">
-<i class="fas fa-code"></i> Cargar Tipos
-</button>
+					<button
+						id="load-types-btn"
+						aria-label="Cargar definiciones de tipos">
+						<i class="fas fa-code"></i> Cargar Tipos
+					</button>
 
-<input type="text" id="filename-input" placeholder="Nombre archivo" value="main" aria-label="Nombre del archivo" maxlength="50" />
+					<input
+						type="text"
+						id="filename-input"
+						placeholder="Nombre archivo"
+						value="main"
+						aria-label="Nombre del archivo"
+						maxlength="50" />
 
-<button id="copy-btn" aria-label="Copiar código">
-<i class="far fa-copy"></i> Copiar
-</button>
+					<button
+						id="copy-btn"
+						aria-label="Copiar código">
+						<i class="far fa-copy"></i> Copiar
+					</button>
 
-<button id="download-btn" aria-label="Descargar código">
-<i class="fas fa-download"></i> Descargar
-</button>
+					<button
+						id="download-btn"
+						aria-label="Descargar código">
+						<i class="fas fa-download"></i> Descargar
+					</button>
 
-<button id="install-btn" aria-label="Instalar aplicación" style="display: none;">
-<i class="fas fa-download"></i> Instalar App
-</button>
+					<button
+						id="install-btn"
+						aria-label="Instalar aplicación"
+						style="display: none">
+						<i class="fas fa-download"></i> Instalar App
+					</button>
 
-<button id="reset-btn" aria-label="Resetear editor">
-<i class="fas fa-trash-alt"></i> Reiniciar
-</button>
-</div>
-</header>
+					<button
+						id="reset-btn"
+						aria-label="Resetear editor">
+						<i class="fas fa-trash-alt"></i> Reiniciar
+					</button>
+				</div>
+			</header>
 
-<section id="editor-container">
-<div id="monaco-editor" aria-label="Editor de código"></div>
-</section>
+			<section id="editor-container">
+				<div
+					id="monaco-editor"
+					aria-label="Editor de código"></div>
+			</section>
 
-<div class="status-bar" id="status-bar" aria-live="polite" aria-atomic="true">
-Cargando editor...
-<div id="save-status" class="save-status" role="status" aria-live="polite">
-<i class="fas fa-save"></i> Guardado
-</div>
-</div>
-</main>
+			<div
+				class="status-bar"
+				id="status-bar"
+				aria-live="polite"
+				aria-atomic="true">
+				Cargando editor...
+				<div
+					id="save-status"
+					class="save-status"
+					role="status"
+					aria-live="polite">
+					<i class="fas fa-save"></i> Guardado
+				</div>
+			</div>
+		</main>
 
-<div class="toast" id="toast" role="alert" aria-live="assertive"></div>
+		<div
+			class="toast"
+			id="toast"
+			role="alert"
+			aria-live="assertive"></div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js"></script>
-<script src="/js/main.js" type="module"></script>
-</body>
-    </html>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js"></script>
+		<script
+			src="/js/main.js"
+			type="module"></script>
+	</body>
+</html>
