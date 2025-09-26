@@ -25,7 +25,39 @@ document.addEventListener("DOMContentLoaded", function () {
 			closeConfigForm();
 		}
 	});
+
+	// Configurar eventos específicos para opciones avanzadas
+	setupAdvancedEventListeners();
 });
+
+// Configurar event listeners para opciones avanzadas
+function setupAdvancedEventListeners() {
+	// Event listener para format on type
+	const formatOnTypeCheckbox = document.getElementById("format-on-type");
+	if (formatOnTypeCheckbox) {
+		formatOnTypeCheckbox.addEventListener("change", (e) => {
+			const settings = JSON.parse(
+				localStorage.getItem(STORAGE_KEY) || "{}"
+			);
+			settings.formatOnType = e.target.checked;
+			localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+			applyFormatSettings();
+		});
+	}
+
+	// Event listener para format on paste
+	const formatOnPasteCheckbox = document.getElementById("format-on-paste");
+	if (formatOnPasteCheckbox) {
+		formatOnPasteCheckbox.addEventListener("change", (e) => {
+			const settings = JSON.parse(
+				localStorage.getItem(STORAGE_KEY) || "{}"
+			);
+			settings.formatOnPaste = e.target.checked;
+			localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+			applyFormatSettings();
+		});
+	}
+}
 
 // Abrir el formulario de configuración
 function openConfigForm() {
@@ -88,11 +120,17 @@ async function saveSettings(e) {
 	try {
 		// Guardar en localStorage como JSON
 		localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
-		
+
 		// Cargar definiciones TypeScript si está disponible
-    if (window.minecraftTypesManager) {
-        await window.minecraftTypesManager.reloadDefinitions();
-    }
+		if (window.minecraftTypesManager) {
+			await window.minecraftTypesManager.reloadDefinitions();
+		}
+
+		// Aplicar configuración inmediatamente
+		applyEditorSettings(settings);
+		applyFormatSettings();
+		applyAdvancedSettings(settings);
+
 		// Mostrar mensaje de éxito
 		showNotification("Configuración guardada correctamente", true);
 
@@ -102,8 +140,6 @@ async function saveSettings(e) {
 		console.error("Error al guardar la configuración:", e);
 		showNotification("Error al guardar la configuración", false);
 	}
-	
-	loadAndApplySettings();
 }
 
 // Restablecer configuración a valores predeterminados
@@ -116,8 +152,14 @@ function resetSettings() {
 		// Eliminar la configuración guardada
 		localStorage.removeItem(STORAGE_KEY);
 
+		// También limpiar configuración de TypeScript si existe
+		localStorage.removeItem("minecraft_typescript_config");
+
 		// Restablecer el formulario
 		settingsForm.reset();
+
+		// Aplicar configuración predeterminada
+		loadAndApplySettings();
 
 		// Mostrar mensaje de éxito
 		showNotification("Configuración restablecida correctamente", true);
@@ -135,48 +177,193 @@ function showNotification(message, isSuccess) {
 	if (!notification) {
 		notification = document.createElement("div");
 		notification.className = "notification";
+		notification.style.cssText = `
+			position: fixed;
+			top: 20px;
+			right: 20px;
+			padding: 15px 20px;
+			border-radius: 5px;
+			color: white;
+			font-weight: bold;
+			z-index: 10000;
+			opacity: 0;
+			transform: translateX(100%);
+			transition: all 0.3s ease;
+		`;
 		document.body.appendChild(notification);
 	}
 
 	// Configurar notificación
 	notification.textContent = message;
 	notification.className = `notification ${isSuccess ? "success" : "error"}`;
-	notification.classList.add("show");
+	notification.style.backgroundColor = isSuccess ? "#4CAF50" : "#f44336";
+	notification.style.opacity = "1";
+	notification.style.transform = "translateX(0)";
 
 	// Ocultar notificación después de 3 segundos
 	setTimeout(() => {
-		notification.classList.remove("show");
+		notification.style.opacity = "0";
+		notification.style.transform = "translateX(100%)";
 	}, 3000);
 }
 
-// Aplicar configuración al editor
+// Aplicar configuración básica al editor
 function applyEditorSettings(settings) {
 	if (window.editorManager && window.editorManager.editor) {
 		const editor = window.editorManager.editor;
-		
+
 		// Aplicar tema
 		if (settings.theme) {
-			monaco.editor.setTheme(settings.theme === 'light' ? 'vs' : 'vs-dark');
+			monaco.editor.setTheme(
+				settings.theme === "light" ? "vs" : "vs-dark"
+			);
 		}
-		
+
 		// Aplicar tamaño de fuente
 		if (settings.fontSize) {
 			editor.updateOptions({ fontSize: parseInt(settings.fontSize) });
 		}
-		
+
 		// Aplicar tamaño de tabulación
 		if (settings.tabSize) {
-			editor.getModel().updateOptions({ tabSize: parseInt(settings.tabSize) });
+			const allModels = monaco.editor.getModels();
+			allModels.forEach((model) => {
+				model.updateOptions({ tabSize: parseInt(settings.tabSize) });
+			});
 		}
-		
+
 		// Aplicar números de línea
 		if (settings.lineNumbers !== undefined) {
-			editor.updateOptions({ lineNumbers: settings.lineNumbers ? 'on' : 'off' });
+			editor.updateOptions({
+				lineNumbers: settings.lineNumbers ? "on" : "off"
+			});
 		}
-		
+
 		// Aplicar ajuste de línea
 		if (settings.wordWrap !== undefined) {
-			editor.updateOptions({ wordWrap: settings.wordWrap ? 'on' : 'off' });
+			editor.updateOptions({
+				wordWrap: settings.wordWrap ? "on" : "off"
+			});
+		}
+
+		// Configuraciones avanzadas del editor
+		editor.updateOptions({
+			// Autocompletado
+			suggest: {
+				preview: settings.enablePreview !== false,
+				showMethods: settings.showMethods !== false,
+				showFunctions: settings.showFunctions !== false,
+				showConstructors: settings.showConstructors !== false,
+				showFields: settings.showFields !== false,
+				showKeywords: settings.showKeywords !== false,
+				showSnippets: settings.showSnippets !== false
+			},
+
+			// Validación y diagnósticos
+			hover: {
+				enabled: settings.enableHover !== false,
+				delay: parseInt(settings.hoverDelay) || 300
+			},
+
+			// Comportamiento del cursor
+			cursorBlinking: settings.cursorBlinking || "blink",
+			cursorSmoothCaretAnimation: settings.smoothCursor === true,
+
+			// Selección y scrolling
+			selectOnLineNumbers: settings.selectOnLineNumbers === true,
+			smoothScrolling: settings.smoothScrolling === true,
+			mouseWheelZoom: settings.mouseWheelZoom === true,
+
+			// Brackets y indentación
+			autoClosingBrackets:
+				settings.autoClosingBrackets !== false ? "always" : "never",
+			autoClosingQuotes:
+				settings.autoClosingQuotes !== false ? "always" : "never",
+			autoIndent: settings.autoIndent !== false ? "full" : "none",
+
+			// Renderizado
+			renderWhitespace: settings.renderWhitespace || "none",
+			renderControlCharacters: settings.renderControlCharacters === true,
+			renderLineHighlight: settings.renderLineHighlight || "line",
+
+			// Minimap
+			minimap: {
+				enabled: settings.minimap === true,
+				side: settings.minimapSide || "right",
+				showSlider: settings.minimapShowSlider || "mouseover"
+			}
+		});
+	}
+}
+
+// Aplicar configuraciones de formato
+function applyFormatSettings() {
+	const settings = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+
+	if (window.editorManager && window.editorManager.editor) {
+		const editor = window.editorManager.editor;
+
+		// Configurar format on type
+		if (settings.formatOnType) {
+			// Agregar listener para format on type
+			editor.onDidType(() => {
+				if (settings.formatOnType) {
+					setTimeout(() => {
+						editor.getAction("editor.action.formatDocument").run();
+					}, 100);
+				}
+			});
+		}
+
+		// Configurar format on save (se activaría con Ctrl+S)
+		if (settings.formatOnSave) {
+			editor.addCommand(
+				monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS,
+				() => {
+					editor.getAction("editor.action.formatDocument").run();
+				}
+			);
+		}
+
+		// Configurar format on paste
+		editor.onDidPaste(() => {
+			if (settings.formatOnPaste) {
+				setTimeout(() => {
+					editor.getAction("editor.action.formatDocument").run();
+				}, 100);
+			}
+		});
+	}
+}
+
+// Aplicar configuraciones avanzadas
+function applyAdvancedSettings(settings) {
+	if (window.editorManager && window.editorManager.editor) {
+		const editor = window.editorManager.editor;
+
+		// Auto-guardado
+		if (settings.autoSave && settings.autoSaveInterval) {
+			const interval = parseInt(settings.autoSaveInterval) * 60000; // Convertir a milisegundos
+
+			if (window.autoSaveInterval) {
+				clearInterval(window.autoSaveInterval);
+			}
+
+			window.autoSaveInterval = setInterval(() => {
+				// Aquí podrías implementar lógica de auto-guardado
+				console.log("Auto-guardado activado");
+			}, interval);
+		}
+
+		// Configuración de validación de código
+		if (settings.enableLinting !== false) {
+			monaco.languages.typescript.javascriptDefaults.setDiagnosticsOptions(
+				{
+					noSemanticValidation: !settings.semanticValidation,
+					noSyntaxValidation: !settings.syntaxValidation,
+					noSuggestionDiagnostics: !settings.suggestionDiagnostics
+				}
+			);
 		}
 	}
 }
@@ -188,6 +375,8 @@ function loadAndApplySettings() {
 		try {
 			const settings = JSON.parse(savedSettings);
 			applyEditorSettings(settings);
+			applyFormatSettings();
+			applyAdvancedSettings(settings);
 		} catch (e) {
 			console.error("Error al aplicar la configuración:", e);
 		}
@@ -195,7 +384,7 @@ function loadAndApplySettings() {
 }
 
 // Escuchar cambios en la configuración
-window.addEventListener('storage', function(e) {
+window.addEventListener("storage", function (e) {
 	if (e.key === STORAGE_KEY) {
 		loadAndApplySettings();
 	}
@@ -209,5 +398,7 @@ window.ConfigManager = {
 	saveSettings,
 	resetSettings,
 	applyEditorSettings,
-	loadAndApplySettings
+	loadAndApplySettings,
+	applyFormatSettings,
+	applyAdvancedSettings
 };
