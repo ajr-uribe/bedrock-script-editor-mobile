@@ -187,7 +187,9 @@
 				border: 1px solid rgba(108, 92, 231, 0.3);
 			}
 		</style>
-		<link rel="stylesheet" href="/assets/css/style.css">
+		<link
+			rel="stylesheet"
+			href="/assets/css/style.css" />
 	</head>
 	<body>
 		<div
@@ -235,81 +237,437 @@
 			</div>
 		</div>
 
-		<div class="form" id="config-form">
-		  <div class="form-container">
-		    <div class="form-header">
-		      <h2 class="form-title">Configuración del Editor</h2>
-		      <button class="close-btn" id="close-form">&times;</button>
-		    </div>
-		    <form id="settings-form">
-		      <div class="form-group">
-		        <label class="form-label" for="username">Nombre de usuario</label>
-		        <input class="form-input" type="text" id="username" name="username" required>
-		      </div>
-		      
-		      <div class="form-group">
-		        <label class="form-label" for="email">Correo electrónico</label>
-		        <input class="form-input" type="email" id="email" name="email" required>
-		      </div>
-		      
-		      <div class="form-group">
-		        <label class="form-label" for="theme">Tema del Editor</label>
-		        <select class="form-select" id="theme" name="theme">
-		          <option value="dark">Oscuro</option>
-		          <option value="light">Claro</option>
-		        </select>
-		      </div>
-		      
-		      <div class="form-group">
-		        <label class="form-label" for="font-size">Tamaño de Fuente</label>
-		        <input class="form-input" type="number" id="font-size" name="fontSize" min="10" max="24" value="14">
-		      </div>
-		      
-		      <div class="form-group">
-		        <label class="form-label" for="tab-size">Tamaño de Tabulación</label>
-		        <input class="form-input" type="number" id="tab-size" name="tabSize" min="2" max="8" value="4">
-		      </div>
-		      
-		      <div class="checkbox-group">
-		        <input class="form-checkbox" type="checkbox" id="line-numbers" name="lineNumbers" checked>
-		        <label class="checkbox-label" for="line-numbers">Mostrar números de línea</label>
-		      </div>
-		      
-		      <div class="checkbox-group">
-		        <input class="form-checkbox" type="checkbox" id="word-wrap" name="wordWrap">
-		        <label class="checkbox-label" for="word-wrap">Ajuste de línea</label>
-		      </div>
-		      
-		      <div class="checkbox-group">
-		        <input class="form-checkbox" type="checkbox" id="auto-save" name="autoSave" checked>
-		        <label class="checkbox-label" for="auto-save">Guardado automático</label>
-		      </div>
-		      
-		      <div class="form-group">
-		        <label class="form-label" for="auto-save-interval">Intervalo de autoguardado (minutos)</label>
-		        <input class="form-input" type="number" id="auto-save-interval" name="autoSaveInterval" min="1" max="60" value="5">
-		      </div>
-		      
-		      <div class="form-buttons">
-		        <button type="button" class="btn btn-secondary" id="cancel-btn">Cancelar</button>
-		        <button type="button" class="btn btn-danger" id="reset-btn">Restablecer</button>
-		        <button type="submit" class="btn btn-primary" id="apply-btn">Guardar Configuración</button>
-		      </div>
-		    </form>
-		  </div>
+		<div
+			class="form"
+			id="config-form">
+			<div class="form-container">
+				<div class="form-header">
+					<h2 class="form-title">Configuración del Editor</h2>
+					<button
+						class="close-btn"
+						id="close-form">
+						&times;
+					</button>
+				</div>
+				<form id="settings-form">
+					<div class="form-group">
+						<label
+							class="form-label"
+							for="username"
+							>Nombre de usuario</label
+						>
+						<input
+							class="form-input"
+							type="text"
+							id="username"
+							name="username"
+							required />
+					</div>
+
+					<div class="form-group">
+						<label
+							class="form-label"
+							for="email"
+							>Correo electrónico</label
+						>
+						<input
+							class="form-input"
+							type="email"
+							id="email"
+							name="email"
+							required />
+					</div>
+
+					<div class="form-group">
+						<label
+							class="form-label"
+							for="theme"
+							>Tema del Editor</label
+						>
+						<select
+							class="form-select"
+							id="theme"
+							name="theme">
+							<option value="dark">Oscuro</option>
+							<option value="light">Claro</option>
+						</select>
+					</div>
+
+					<div class="form-group">
+						<label
+							class="form-label"
+							for="font-size"
+							>Tamaño de Fuente</label
+						>
+						<input
+							class="form-input"
+							type="number"
+							id="font-size"
+							name="fontSize"
+							min="10"
+							max="24"
+							value="14" />
+					</div>
+
+					<div class="form-group">
+						<label
+							class="form-label"
+							for="tab-size"
+							>Tamaño de Tabulación</label
+						>
+						<input
+							class="form-input"
+							type="number"
+							id="tab-size"
+							name="tabSize"
+							min="2"
+							max="8"
+							value="4" />
+					</div>
+
+					<div class="checkbox-group">
+						<input
+							class="form-checkbox"
+							type="checkbox"
+							id="line-numbers"
+							name="lineNumbers"
+							checked />
+						<label
+							class="checkbox-label"
+							for="line-numbers"
+							>Mostrar números de línea</label
+						>
+					</div>
+
+					<div class="checkbox-group">
+						<input
+							class="form-checkbox"
+							type="checkbox"
+							id="word-wrap"
+							name="wordWrap" />
+						<label
+							class="checkbox-label"
+							for="word-wrap"
+							>Ajuste de línea</label
+						>
+					</div>
+
+					<div class="checkbox-group">
+						<input
+							class="form-checkbox"
+							type="checkbox"
+							id="auto-save"
+							name="autoSave"
+							checked />
+						<label
+							class="checkbox-label"
+							for="auto-save"
+							>Guardado automático</label
+						>
+					</div>
+
+					<div class="form-group">
+						<label
+							class="form-label"
+							for="auto-save-interval"
+							>Intervalo de autoguardado (minutos)</label
+						>
+						<input
+							class="form-input"
+							type="number"
+							id="auto-save-interval"
+							name="autoSaveInterval"
+							min="1"
+							max="60"
+							value="5" />
+					</div>
+
+					<div class="form-group">
+						<h4
+							style="
+								color: #fff;
+								margin: 20px 0 10px 0;
+								border-bottom: 1px solid #444;
+								padding-bottom: 5px;
+							">
+							Formateo de Código
+						</h4>
+					</div>
+
+					<div class="checkbox-group">
+						<input
+							class="form-checkbox"
+							type="checkbox"
+							id="format-on-type"
+							name="formatOnType" />
+						<label
+							class="checkbox-label"
+							for="format-on-type"
+							>Formatear mientras escribes</label
+						>
+					</div>
+
+					<div class="checkbox-group">
+						<input
+							class="form-checkbox"
+							type="checkbox"
+							id="format-on-paste"
+							name="formatOnPaste" />
+						<label
+							class="checkbox-label"
+							for="format-on-paste"
+							>Formatear al pegar código</label
+						>
+					</div>
+
+					<!-- Sección de Autocompletado -->
+					<div class="form-group">
+						<h4
+							style="
+								color: #fff;
+								margin: 20px 0 10px 0;
+								border-bottom: 1px solid #444;
+								padding-bottom: 5px;
+							">
+							Autocompletado
+						</h4>
+					</div>
+
+					<div class="checkbox-group">
+						<input
+							class="form-checkbox"
+							type="checkbox"
+							id="enable-preview"
+							name="enablePreview"
+							checked />
+						<label
+							class="checkbox-label"
+							for="enable-preview"
+							>Vista previa de sugerencias</label
+						>
+					</div>
+
+					<div class="checkbox-group">
+						<input
+							class="form-checkbox"
+							type="checkbox"
+							id="show-methods"
+							name="showMethods"
+							checked />
+						<label
+							class="checkbox-label"
+							for="show-methods"
+							>Mostrar métodos</label
+						>
+					</div>
+
+					<div class="checkbox-group">
+						<input
+							class="form-checkbox"
+							type="checkbox"
+							id="show-keywords"
+							name="showKeywords"
+							checked />
+						<label
+							class="checkbox-label"
+							for="show-keywords"
+							>Mostrar palabras clave</label
+						>
+					</div>
+
+					<div class="form-group">
+						<label
+							class="form-label"
+							for="hover-delay"
+							>Retraso del hover (ms)</label
+						>
+						<input
+							class="form-input"
+							type="number"
+							id="hover-delay"
+							name="hoverDelay"
+							min="0"
+							max="1000"
+							value="300"
+							step="50" />
+					</div>
+
+					<!-- Sección de Comportamiento -->
+					<div class="form-group">
+						<h4
+							style="
+								color: #fff;
+								margin: 20px 0 10px 0;
+								border-bottom: 1px solid #444;
+								padding-bottom: 5px;
+							">
+							Comportamiento del Editor
+						</h4>
+					</div>
+
+					<div class="checkbox-group">
+						<input
+							class="form-checkbox"
+							type="checkbox"
+							id="smooth-cursor"
+							name="smoothCursor" />
+						<label
+							class="checkbox-label"
+							for="smooth-cursor"
+							>Animación suave del cursor</label
+						>
+					</div>
+
+					<div class="checkbox-group">
+						<input
+							class="form-checkbox"
+							type="checkbox"
+							id="mouse-wheel-zoom"
+							name="mouseWheelZoom" />
+						<label
+							class="checkbox-label"
+							for="mouse-wheel-zoom"
+							>Zoom con rueda del mouse</label
+						>
+					</div>
+
+					<div class="checkbox-group">
+						<input
+							class="form-checkbox"
+							type="checkbox"
+							id="smooth-scrolling"
+							name="smoothScrolling" />
+						<label
+							class="checkbox-label"
+							for="smooth-scrolling"
+							>Desplazamiento suave</label
+						>
+					</div>
+
+					<div class="form-group">
+						<label
+							class="form-label"
+							for="cursor-blinking"
+							>Estilo del cursor</label
+						>
+						<select
+							class="form-select"
+							id="cursor-blinking"
+							name="cursorBlinking">
+							<option value="blink">Parpadeante</option>
+							<option value="smooth">Suave</option>
+							<option value="phase">Fase</option>
+							<option value="expand">Expandir</option>
+							<option value="solid">Sólido</option>
+						</select>
+					</div>
+
+					<!-- Sección de Validación -->
+					<div class="form-group">
+						<h4
+							style="
+								color: #fff;
+								margin: 20px 0 10px 0;
+								border-bottom: 1px solid #444;
+								padding-bottom: 5px;
+							">
+							Validación de Código
+						</h4>
+					</div>
+
+					<div class="checkbox-group">
+						<input
+							class="form-checkbox"
+							type="checkbox"
+							id="semantic-validation"
+							name="semanticValidation"
+							checked />
+						<label
+							class="checkbox-label"
+							for="semantic-validation"
+							>Validación semántica</label
+						>
+					</div>
+
+					<div class="checkbox-group">
+						<input
+							class="form-checkbox"
+							type="checkbox"
+							id="syntax-validation"
+							name="syntaxValidation"
+							checked />
+						<label
+							class="checkbox-label"
+							for="syntax-validation"
+							>Validación de sintaxis</label
+						>
+					</div>
+
+					<div class="checkbox-group">
+						<input
+							class="form-checkbox"
+							type="checkbox"
+							id="suggestion-diagnostics"
+							name="suggestionDiagnostics"
+							checked />
+						<label
+							class="checkbox-label"
+							for="suggestion-diagnostics"
+							>Sugerencias de diagnóstico</label
+						>
+					</div>
+					<div class="form-buttons">
+						<button
+							type="button"
+							class="btn btn-secondary"
+							id="cancel-btn">
+							Cancelar
+						</button>
+						<button
+							type="button"
+							class="btn btn-danger"
+							id="reset-btn">
+							Restablecer
+						</button>
+						<button
+							type="submit"
+							class="btn btn-primary"
+							id="apply-btn">
+							Guardar Configuración
+						</button>
+					</div>
+				</form>
+			</div>
 		</div>
-		
-		<div class="form" id="fileName-form">
-		<div class="form-container">
-		  <input type="text" class="form-input" id="filename-input" placeholder="Nombre del archivo con extensión: name.js" required>
-		  <button type="submit" id="crear-con-nombre" class="btn-primary">Crear</button>
-		  <button id="close-fileName-form" class="btn-danger">Cancelar</button>
-		</div>
+
+		<div
+			class="form"
+			id="fileName-form">
+			<div class="form-container">
+				<input
+					type="text"
+					class="form-input"
+					id="filename-input"
+					placeholder="Nombre del archivo con extensión: name.js"
+					required />
+				<button
+					type="submit"
+					id="crear-con-nombre"
+					class="btn-primary">
+					Crear
+				</button>
+				<button
+					id="close-fileName-form"
+					class="btn-danger">
+					Cancelar
+				</button>
+			</div>
 		</div>
 
 		<!-- JavaScript diferido -->
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.js"></script>
-		<script src="/assets/js/main.js" type="module">
-		</script>
+		<script
+			src="/assets/js/main.js"
+			type="module"></script>
 	</body>
 </html>
