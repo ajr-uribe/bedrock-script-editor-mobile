@@ -70,9 +70,9 @@ export default class EditorManager {
 			language = "",
 			name = `file-${this.nextTabId}.js`
 		} = modelData;
-		
-		if(modelData.name.endsWith('.js')) {
-		  language = 'javascript'
+
+		if (modelData.name.endsWith(".js")) {
+			language = "javascript";
 		}
 
 		// Crear el modelo
@@ -101,12 +101,16 @@ export default class EditorManager {
 
 		return id;
 	}
-	
+
 	// Crear nueva pestaña
 	createNewTab(fileName) {
 		const id = `tab-${Date.now()}`;
 		const random = Math.floor(Math.random() * 10);
-		const name = fileName || `sin-nombre-${(random + random).toString() + (random + random).toString()}.js`;
+		const name =
+			fileName ||
+			`sin-nombre-${
+				(random + random).toString() + (random + random).toString()
+			}.js`;
 
 		// Crear modelo vacío
 		const uri = monaco.Uri.parse(`file:///${name}`);
@@ -180,6 +184,9 @@ export default class EditorManager {
 		// Cambiar modelo en el editor
 		this.editor.setModel(this.models[id].model);
 		this.activeModelId = id;
+
+		// Hacer disponible para el debugger
+		window.editorManager.activeEditor = this.editor;
 
 		// Enfocar el editor
 		this.editor.focus();
@@ -259,24 +266,30 @@ export default class EditorManager {
 	setupEvents() {
 		// Evento para añadir nueva pestaña
 		document.getElementById("add-tab").addEventListener("click", () => {
-		  document.getElementById('fileName-form').style.display = 'flex'
+			document.getElementById("fileName-form").style.display = "flex";
 		});
-		
-		document.getElementById('close-fileName-form').addEventListener('click', () => {
-		  document.getElementById('fileName-form').style.display = 'none'
-		})
-		
-		document.getElementById('crear-con-nombre').addEventListener('click', () => {
-		  const filename = document.getElementById('filename-input').value;
-		  const regex = /(\.js)$/
-		  if(regex.test(filename)){
-		    this.createNewTab(filename)
-		    
-		    document.getElementById('fileName-form').style.display =  'none';
-		  } else if (!regex.test(filename)) {
-		    return console.log('El nombre tiene un formato inválido')
-		  }
-		})
+
+		document
+			.getElementById("close-fileName-form")
+			.addEventListener("click", () => {
+				document.getElementById("fileName-form").style.display = "none";
+			});
+
+		document
+			.getElementById("crear-con-nombre")
+			.addEventListener("click", () => {
+				const filename =
+					document.getElementById("filename-input").value;
+				const regex = /(\.js)$/;
+				if (regex.test(filename)) {
+					this.createNewTab(filename);
+
+					document.getElementById("fileName-form").style.display =
+						"none";
+				} else if (!regex.test(filename)) {
+					return console.log("El nombre tiene un formato inválido");
+				}
+			});
 	}
 
 	// Obtener modelo activo

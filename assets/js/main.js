@@ -1,7 +1,8 @@
 import "./utils/form-script.js";
 import EditorManager from "./core/EditorManager.js";
-import MobileEditorToolbar from "./utils/Toolbar.js";
-import TypesManager from './utils/TypesManager.js';
+import TypesManager from "./utils/TypesManager.js";
+import MinecraftStaticDebugger from "./utils/MinecraftStaticDebugger.js";
+import StatusBarManager from "./utils/StatusBarManager.js";
 
 // Inicializar cuando la página cargue
 document.addEventListener("DOMContentLoaded", async () => {
@@ -21,20 +22,65 @@ document.addEventListener("DOMContentLoaded", async () => {
 		document.getElementById("tabs-container")
 	);
 
-	if ("ontouchstart" in window || navigator.maxTouchPoints > 0) {
-		window.mobileToolbar = new MobileEditorToolbar();
+	// Esperar a que Monaco esté disponible antes de inicializar tipos y debugger
+	const waitForMonaco = () => {
+		return new Promise((resolve) => {
+			const checkMonaco = () => {
+				if (window.monaco) {
+					resolve();
+				} else {
+					setTimeout(checkMonaco, 100);
+				}
+			};
+			checkMonaco();
+		});
+	};
+
+	await waitForMonaco();
+
+	// Inicializar el debugger estático después del types manager
+	window.staticDebugger = new MinecraftStaticDebugger(
+		window.minecraftTypesManager
+	);
+
+	// Configurar botón de debug
+	const debugBtn = document.getElementById("debug-btn");
+	if (debugBtn) {
+		debugBtn.addEventListener("click", () => {
+			if (window.staticDebugger) {
+				window.staticDebugger.toggle();
+			}
+		});
 	}
 
-	document.getElementById("apply-btn").addEventListener("click", async () => {
-		await window.ConfigManager.applyEditorSettings();
-	});
+	// Configurar botón de aplicar configuración
+	const applyBtn = document.getElementById("apply-btn");
+	if (applyBtn) {
+		applyBtn.addEventListener("click", async () => {
+			if (window.ConfigManager && window.ConfigManager.saveSettings) {
+				await window.ConfigManager.saveSettings();
+			}
+			if (window.minecraftTypesManager) {
+				await window.minecraftTypesManager.reloadDefinitions();
+			}
+		});
+	}
+
 	// Cargar y aplicar configuración del editor
 	setTimeout(() => {
 		if (window.ConfigManager && window.ConfigManager.loadAndApplySettings) {
 			window.ConfigManager.loadAndApplySettings();
 		}
 	}, 1000);
+
+	// Cargar definiciones TypeScript después de un breve delay
+	setTimeout(async () => {
+		if (window.minecraftTypesManager) {
+			await window.minecraftTypesManager.loadTypeScriptDefinitions();
+		}
+	}, 1500);
 });
 
-// Hacer el EditorManager disponible globalmente
+// Hacer clases disponibles globalmente
 window.EditorManager = EditorManager;
+window.MinecraftStaticDebugger = MinecraftStaticDebugger;
