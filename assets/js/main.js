@@ -2,8 +2,7 @@ import "./utils/form-script.js";
 import EditorManager from "./core/EditorManager.js";
 import TypesManager from "./utils/TypesManager.js";
 import MinecraftStaticDebugger from "./utils/MinecraftStaticDebugger.js";
-import StatusBarManager from "./utils/StatusBarManager.js";
-
+import MobileEditorToolbar from './utils/Toolbar.js'
 // Inicializar cuando la página cargue
 document.addEventListener("DOMContentLoaded", async () => {
 	// Ocultar pantalla de carga después de 3 segundos
@@ -21,7 +20,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 		document.getElementById("editor"),
 		document.getElementById("tabs-container")
 	);
-
+	
+	//toolbar
+	if ("ontouchstart" in window || navigator.maxTouchPoints > 0) {
+		window.mobileToolbar = new MobileEditorToolbar();
+	}
 	// Esperar a que Monaco esté disponible antes de inicializar tipos y debugger
 	const waitForMonaco = () => {
 		return new Promise((resolve) => {
