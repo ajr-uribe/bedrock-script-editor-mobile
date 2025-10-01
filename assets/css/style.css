@@ -39,7 +39,12 @@
 	box-sizing: border-box;
 }
 
+html {
+  overflow: hidden;
+  height: 100%;
+}
 body {
+  overflow: hidden;
 	height: 100dvh;
 	width: 100dvw;
 	font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
