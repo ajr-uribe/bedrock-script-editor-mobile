@@ -51,12 +51,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 	await waitForMonaco();
 
-	// Inicializar el gestor de tipos TypeScript
-	window.minecraftTypesManager = new TypesManager();
-
-	// Inicializar el debugger estático después del types manager
+	// Inicializar el debugger estático y el types manager
 	window.staticDebugger = new MinecraftStaticDebugger(
-		window.minecraftTypesManager
+		window.minecraftTypesManager()
 	);
 
 	// Configurar botón de debug
