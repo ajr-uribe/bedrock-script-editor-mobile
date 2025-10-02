@@ -27,14 +27,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 		document.getElementById("tabs-container")
 	);
 
-	// Inicializar StatusBar después del editor
-	window.statusBarManager = new StatusBarManager(window.editorManager);
-
-	// Toolbar móvil
-	if ("ontouchstart" in window || navigator.maxTouchPoints > 0) {
-		window.mobileToolbar = new MobileEditorToolbar();
-	}
-
 	// Esperar a que Monaco esté disponible antes de inicializar tipos y debugger
 	const waitForMonaco = () => {
 		return new Promise((resolve) => {
