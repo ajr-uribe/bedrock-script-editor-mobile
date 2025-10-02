@@ -1,0 +1,28 @@
+{
+  "name": "MCBEditor v2",
+  "short_name": "MCBEditor",
+  "description": "Editor de código para Minecraft Bedrock con soporte TypeScript y debugging estático",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f0f1a",
+  "theme_color": "#007ACC",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/assets/img/logo.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["development", "productivity", "utilities"],
+  "shortcuts": [
+    {
+      "name": "Nuevo Archivo",
+      "short_name": "Nuevo",
+      "description": "Crear un nuevo archivo JavaScript",
+      "url": "/?action=new",
+      "icons": [{ "src": "/assets/img/logo.png", "sizes": "96x96" }]
+    }
+  ]
+}

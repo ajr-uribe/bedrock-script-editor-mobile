@@ -2,7 +2,8 @@ import "./utils/form-script.js";
 import EditorManager from "./core/EditorManager.js";
 import TypesManager from "./utils/TypesManager.js";
 import MinecraftStaticDebugger from "./utils/MinecraftStaticDebugger.js";
-import MobileEditorToolbar from './utils/Toolbar.js'
+import MobileEditorToolbar from "./utils/Toolbar.js";
+import PWAManager from "./utils/pwa-manager.js";
 // Inicializar cuando la página cargue
 document.addEventListener("DOMContentLoaded", async () => {
 	// Ocultar pantalla de carga después de 3 segundos
@@ -20,7 +21,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 		document.getElementById("editor"),
 		document.getElementById("tabs-container")
 	);
-	
+
 	//toolbar
 	if ("ontouchstart" in window || navigator.maxTouchPoints > 0) {
 		window.mobileToolbar = new MobileEditorToolbar();
@@ -68,6 +69,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 			}
 		});
 	}
+
+	document.addEventListener("DOMContentLoaded", async () => {
+		// Inicializar PWA Manager
+		window.pwaManager = new PWAManager();
+	});
 
 	// Cargar y aplicar configuración del editor
 	setTimeout(() => {

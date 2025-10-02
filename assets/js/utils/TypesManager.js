@@ -314,11 +314,28 @@ class MinecraftTypesManager {
 					? "1.21.101"
 					: version;
 
+			// Guardar definiciones cargadas
 			this.loadedDefinitions[module] = {
 				version: actualVersion,
 				content: content,
 				uri: `file:///node_modules/@minecraft/${module}/index.d.ts`
 			};
+
+			// Cachear con el service worker para uso offline
+			if (window.pwaManager && response.ok) {
+				try {
+					await window.pwaManager.cacheTypeDefinitions([urlPath]);
+					console.log(
+						`[PWA] Cached type definitions for ${module}@${actualVersion}`
+					);
+				} catch (error) {
+					console.warn(
+						`[PWA] Failed to cache type definitions for ${module}:`,
+						error
+					);
+					// No fallar si el cacheo falla, solo advertir
+				}
+			}
 
 			return {
 				module: module,
