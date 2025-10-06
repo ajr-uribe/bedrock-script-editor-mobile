@@ -1,4 +1,4 @@
-// StatusBarManager.js - Sistema de barra de estado y auto-guardado mejorado
+// StatusBarManager.js - Sistema de barra de estado
 class StatusBarManager {
 	constructor(editorManager) {
 		this.editorManager = editorManager;
@@ -8,6 +8,7 @@ class StatusBarManager {
 		this.hasUnsavedChanges = false;
 		this.autoSaveEnabled = true;
 		this.autoSaveDelay = 5000; // 5 segundos por defecto
+		this.version = "v2.0.0"; // Versión de la app
 
 		this.init();
 	}
@@ -36,34 +37,33 @@ class StatusBarManager {
             font-size: 12px;
             display: flex;
             align-items: center;
-            justify-content: space-between;
             padding: 0 15px;
             z-index: 999;
             border-top: 1px solid #005a9e;
+            transition: background 0.3s;
         `;
 
-		this.statusBar.innerHTML = `
-            <div class="status-left">
-                <span id="file-info">Sin archivo</span>
-                <span id="cursor-info" style="margin-left: 15px;">Línea 1, Columna 1</span>
-                <span id="selection-info" style="margin-left: 15px;"></span>
-            </div>
-            <div class="status-right">
-                <span id="save-status">Guardado</span>
-                <span id="file-stats" style="margin-left: 15px;">0 líneas, 0 caracteres</span>
-                <span id="editor-language" style="margin-left: 15px;">JavaScript</span>
-            </div>
-        `;
+		this.statusBar.textContent = "Inicializando...";
 
-		// Insertar antes del editor para que no lo cubra
 		const editorContainer = document.querySelector(".editor-container");
 		if (editorContainer) {
 			editorContainer.style.paddingBottom = "24px";
 		}
 
 		document.body.appendChild(this.statusBar);
+
+		// Actualizar cuando cambie el estado de conexión
+		window.addEventListener("online", () => this.updateStatusBar());
+		window.addEventListener("offline", () => this.updateStatusBar());
+
+		// Click en la barra para mostrar opciones de guardado
+		this.statusBar.addEventListener("click", () => {
+			this.showSaveOptions();
+		});
+		this.statusBar.style.cursor = "pointer";
 	}
 
+	// Crear botón de guardado para móvil
 	createMobileSaveButton() {
 		// Solo crear en dispositivos móviles
 		if (!("ontouchstart" in window) && !navigator.maxTouchPoints) return;
@@ -72,24 +72,24 @@ class StatusBarManager {
 		saveButton.id = "mobile-save-btn";
 		saveButton.innerHTML = "💾";
 		saveButton.style.cssText = `
-        position: fixed;
-        top: 10px;
-        right: 10px;
-        width: 40px;
-        height: 40px;
-        background: #007ACC;
-        border: none;
-        color: white;
-        border-radius: 50%;
-        font-size: 18px;
-        cursor: pointer;
-        z-index: 1001;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-        transition: all 0.2s ease;
-    `;
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            width: 40px;
+            height: 40px;
+            background: #007ACC;
+            border: none;
+            color: white;
+            border-radius: 50%;
+            font-size: 18px;
+            cursor: pointer;
+            z-index: 1001;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            transition: all 0.2s ease;
+        `;
 
 		saveButton.addEventListener("click", () => {
 			this.performManualSave();
@@ -114,20 +114,20 @@ class StatusBarManager {
 	showSaveNotification() {
 		const notification = document.createElement("div");
 		notification.style.cssText = `
-        position: fixed;
-        top: 60px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: #4CAF50;
-        color: white;
-        padding: 10px 20px;
-        border-radius: 25px;
-        font-size: 14px;
-        z-index: 2000;
-        opacity: 0;
-        transition: opacity 0.3s ease;
-    `;
-		notification.textContent = "💾 Guardado exitosamente";
+            position: fixed;
+            top: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 14px;
+            z-index: 2000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        `;
+		notification.textContent = "Guardado exitosamente";
 
 		document.body.appendChild(notification);
 
@@ -163,29 +163,17 @@ class StatusBarManager {
 		// Escuchar cambios en el contenido
 		this.contentChangeDisposable = editor.onDidChangeModelContent(() => {
 			this.hasUnsavedChanges = true;
-			this.updateSaveStatus("No guardado");
 			this.scheduleAutoSave();
 		});
 
-		// Escuchar cambios de posición del cursor
+		// Escuchar cambios de posición del cursor - solo actualizar status bar
 		if (this.cursorChangeDisposable) {
 			this.cursorChangeDisposable.dispose();
 		}
 
 		this.cursorChangeDisposable = editor.onDidChangeCursorPosition(() => {
-			this.updateCursorInfo();
+			this.updateStatusBar();
 		});
-
-		// Escuchar cambios de selección
-		if (this.selectionChangeDisposable) {
-			this.selectionChangeDisposable.dispose();
-		}
-
-		this.selectionChangeDisposable = editor.onDidChangeCursorSelection(
-			() => {
-				this.updateSelectionInfo();
-			}
-		);
 	}
 
 	// Programar auto-guardado
@@ -213,17 +201,8 @@ class StatusBarManager {
 
 			this.hasUnsavedChanges = false;
 			this.lastSaveTime = new Date();
-			this.updateSaveStatus("Guardado automáticamente");
-
-			// Limpiar el estado después de 2 segundos
-			setTimeout(() => {
-				if (!this.hasUnsavedChanges) {
-					this.updateSaveStatus("Guardado");
-				}
-			}, 2000);
 		} catch (error) {
 			console.error("Error en auto-guardado:", error);
-			this.updateSaveStatus("Error al guardar");
 		}
 	}
 
@@ -242,13 +221,6 @@ class StatusBarManager {
 				this.performManualSave();
 			}
 		});
-
-		// Hacer la barra de estado clickeable para mostrar más info
-		this.statusBar.addEventListener("click", (e) => {
-			if (e.target.id === "save-status") {
-				this.showSaveOptions();
-			}
-		});
 	}
 
 	// Realizar guardado manual
@@ -259,122 +231,50 @@ class StatusBarManager {
 			this.editorManager.saveModels();
 			this.hasUnsavedChanges = false;
 			this.lastSaveTime = new Date();
-			this.updateSaveStatus("Guardado manualmente");
-
-			setTimeout(() => {
-				if (!this.hasUnsavedChanges) {
-					this.updateSaveStatus("Guardado");
-				}
-			}, 2000);
 		} catch (error) {
 			console.error("Error en guardado manual:", error);
-			this.updateSaveStatus("Error al guardar");
 		}
 	}
 
-	// Actualizar información de la barra de estado
+	// Actualizar información de la barra de estado (formato simplificado)
 	updateStatusBar() {
-		this.updateFileInfo();
-		this.updateCursorInfo();
-		this.updateSelectionInfo();
-		this.updateFileStats();
-		this.updateLanguageInfo();
-	}
+		if (!this.editorManager?.editor) {
+			this.statusBar.textContent = "Editor no disponible";
+			return;
+		}
 
-	// Actualizar información del archivo
-	updateFileInfo() {
-		const fileInfoElement = document.getElementById("file-info");
-		if (!fileInfoElement) return;
+		const editor = this.editorManager.editor;
+		const position = editor.getPosition();
 
-		if (this.editorManager && this.editorManager.activeModelId) {
-			const activeModel = this.editorManager.getActiveModel();
-			if (activeModel) {
-				fileInfoElement.textContent = activeModel.name || "Sin título";
-			}
+		// Detectar modo de app (PWA)
+		const isStandalone =
+			window.matchMedia("(display-mode: standalone)").matches ||
+			window.navigator.standalone === true;
+
+		// Detectar dispositivo
+		const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(
+			navigator.userAgent
+		);
+
+		// Estado de conexión
+		const isOnline = navigator.onLine;
+
+		// Construir texto de estado
+		const statusText = [
+			`Ln ${position?.lineNumber || 1}, Col ${position?.column || 1}`,
+			isStandalone ? "App" : "Web",
+			isMobile ? "Mobile" : "Desktop",
+			isOnline ? "Online" : "Offline",
+			this.version
+		].join(" | ");
+
+		this.statusBar.textContent = statusText;
+
+		// Cambiar color de fondo según estado de conexión
+		if (!isOnline) {
+			this.statusBar.style.background = "#f44336";
 		} else {
-			fileInfoElement.textContent = "Sin archivo";
-		}
-	}
-
-	// Actualizar información del cursor
-	updateCursorInfo() {
-		const cursorInfoElement = document.getElementById("cursor-info");
-		if (!cursorInfoElement || !this.editorManager?.editor) return;
-
-		const position = this.editorManager.editor.getPosition();
-		if (position) {
-			cursorInfoElement.textContent = `Línea ${position.lineNumber}, Columna ${position.column}`;
-		}
-	}
-
-	// Actualizar información de selección
-	updateSelectionInfo() {
-		const selectionInfoElement = document.getElementById("selection-info");
-		if (!selectionInfoElement || !this.editorManager?.editor) return;
-
-		const selection = this.editorManager.editor.getSelection();
-		if (selection && !selection.isEmpty()) {
-			const selectedText = this.editorManager.editor
-				.getModel()
-				.getValueInRange(selection);
-			const lines = selectedText.split("\n").length;
-			const chars = selectedText.length;
-
-			if (lines > 1) {
-				selectionInfoElement.textContent = `${lines} líneas, ${chars} caracteres seleccionados`;
-			} else {
-				selectionInfoElement.textContent = `${chars} caracteres seleccionados`;
-			}
-		} else {
-			selectionInfoElement.textContent = "";
-		}
-	}
-
-	// Actualizar estadísticas del archivo
-	updateFileStats() {
-		const fileStatsElement = document.getElementById("file-stats");
-		if (!fileStatsElement || !this.editorManager?.editor) return;
-
-		const model = this.editorManager.editor.getModel();
-		if (model) {
-			const lineCount = model.getLineCount();
-			const charCount = model.getValue().length;
-			const wordCount = model
-				.getValue()
-				.split(/\s+/)
-				.filter((word) => word.length > 0).length;
-
-			fileStatsElement.textContent = `${lineCount} líneas, ${wordCount} palabras, ${charCount} caracteres`;
-		}
-	}
-
-	// Actualizar información del lenguaje
-	updateLanguageInfo() {
-		const languageElement = document.getElementById("editor-language");
-		if (!languageElement || !this.editorManager?.editor) return;
-
-		const model = this.editorManager.editor.getModel();
-		if (model) {
-			const language = model.getLanguageId();
-			languageElement.textContent =
-				language === "javascript" ? "JavaScript" : language;
-		}
-	}
-
-	// Actualizar estado de guardado
-	updateSaveStatus(status) {
-		const saveStatusElement = document.getElementById("save-status");
-		if (saveStatusElement) {
-			saveStatusElement.textContent = status;
-
-			// Cambiar color según el estado
-			if (status.includes("Error")) {
-				saveStatusElement.style.color = "#f44336";
-			} else if (status.includes("No guardado")) {
-				saveStatusElement.style.color = "#FF9800";
-			} else {
-				saveStatusElement.style.color = "white";
-			}
+			this.statusBar.style.background = "#007ACC";
 		}
 	}
 
@@ -521,13 +421,6 @@ class StatusBarManager {
 		if (!enabled && this.autoSaveTimeout) {
 			clearTimeout(this.autoSaveTimeout);
 		}
-
-		this.updateSaveStatus("Configuración actualizada");
-		setTimeout(() => {
-			if (!this.hasUnsavedChanges) {
-				this.updateSaveStatus("Guardado");
-			}
-		}, 2000);
 	}
 
 	// Limpiar recursos
@@ -537,9 +430,6 @@ class StatusBarManager {
 		}
 		if (this.cursorChangeDisposable) {
 			this.cursorChangeDisposable.dispose();
-		}
-		if (this.selectionChangeDisposable) {
-			this.selectionChangeDisposable.dispose();
 		}
 		if (this.autoSaveTimeout) {
 			clearTimeout(this.autoSaveTimeout);

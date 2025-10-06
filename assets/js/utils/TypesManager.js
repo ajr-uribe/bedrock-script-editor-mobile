@@ -490,11 +490,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 		});
 	};
 
-	await waitForMonaco();
-
-	// Inicializar el gestor de tipos TypeScript
-	window.minecraftTypesManager = new MinecraftTypesManager();
-
 	// Cargar definiciones después de un breve delay para asegurar que todo esté inicializado
 	setTimeout(async () => {
 		await window.minecraftTypesManager.loadTypeScriptDefinitions();

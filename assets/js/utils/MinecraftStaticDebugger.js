@@ -19,67 +19,63 @@ class MinecraftStaticDebugger {
 		this.debugPanel = document.createElement("div");
 		this.debugPanel.id = "static-debug-panel";
 		this.debugPanel.style.cssText = `
-            position: absolute;
-            word-wrap: wrap;
-            left: 50%;
-            top: 50%;
-            width: auto;
-            max-width: 90vw;
-            max-height: 500px;
-            transform: translate(-50%, -50%);
-            background: #1e1e1e;
-            border: 1px solid #444;
-            border-radius: 8px;
-            color: #fff;
-            font-family: 'Segoe UI', monospace;
-            font-size: 12px;
-            overflow: hidden;
-            z-index: 1000;
-            display: none;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-        `;
+        position: fixed;
+        right: 10px;
+        top: 100px;
+        width: 350px;
+        max-height: 500px;
+        background: #1e1e1e;
+        border: 1px solid #444;
+        border-radius: 8px;
+        color: #fff;
+        font-family: 'Segoe UI', monospace;
+        font-size: 12px;
+        overflow: hidden;
+        z-index: 10000;
+        display: none;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    `;
 
 		this.debugPanel.innerHTML = `
-            <div style="
-                background: #2d2d2d;
-                padding: 12px;
-                border-bottom: 1px solid #444;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-            ">
-                <strong style="color: #4CAF50;">🔍 Static Debugger</strong>
-                <div>
-                    <button id="refresh-debug" style="
-                        background: #007ACC;
-                        border: none;
-                        color: white;
-                        padding: 4px 8px;
-                        border-radius: 3px;
-                        font-size: 11px;
-                        margin-right: 5px;
-                        cursor: pointer;
-                    ">Refresh</button>
-                    <button id="close-debug" style="
-                        background: none;
-                        border: none;
-                        color: #fff;
-                        font-size: 16px;
-                        cursor: pointer;
-                        padding: 0 5px;
-                    ">×</button>
-                </div>
+        <div style="
+            background: #2d2d2d;
+            padding: 12px;
+            border-bottom: 1px solid #444;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        ">
+            <strong style="color: #4CAF50;">🔍 Static Debugger</strong>
+            <div>
+                <button id="refresh-debug" style="
+                    background: #007ACC;
+                    border: none;
+                    color: white;
+                    padding: 4px 8px;
+                    border-radius: 3px;
+                    font-size: 11px;
+                    margin-right: 5px;
+                    cursor: pointer;
+                ">Refresh</button>
+                <button id="close-debug" style="
+                    background: none;
+                    border: none;
+                    color: #fff;
+                    font-size: 16px;
+                    cursor: pointer;
+                    padding: 0 5px;
+                ">×</button>
             </div>
-            <div id="debug-content" style="
-                padding: 15px;
-                max-height: 430px;
-                overflow-y: auto;
-            "></div>
-        `;
+        </div>
+        <div id="debug-content" style="
+            padding: 15px;
+            max-height: 430px;
+            overflow-y: auto;
+        "></div>
+    `;
 
 		document.body.appendChild(this.debugPanel);
 	}
-
 	// Configurar event listeners
 	setupEventListeners() {
 		document.getElementById("close-debug").addEventListener("click", () => {
