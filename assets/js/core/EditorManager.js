@@ -45,6 +45,21 @@ export default class EditorManager {
 		}
 	}
 
+	// Determinar lenguaje por extensión
+	getLanguageFromFilename(filename) {
+		const extension = filename.split(".").pop().toLowerCase();
+		const languageMap = {
+			js: "javascript",
+			json: "json",
+			ts: "typescript",
+			html: "html",
+			css: "css",
+			md: "markdown",
+			txt: "plaintext"
+		};
+		return languageMap[extension] || "javascript";
+	}
+
 	// Cargar modelos desde localStorage
 	loadModels() {
 		const savedModels = localStorage.getItem("mcbeditor_models");
@@ -71,8 +86,9 @@ export default class EditorManager {
 			name = `file-${this.nextTabId}.js`
 		} = modelData;
 
-		if (modelData.name.endsWith(".js")) {
-			language = "javascript";
+		// Determinar lenguaje por extensión si no está especificado
+		if (!language) {
+			language = this.getLanguageFromFilename(name);
 		}
 
 		// Crear el modelo
@@ -112,15 +128,18 @@ export default class EditorManager {
 				(random + random).toString() + (random + random).toString()
 			}.js`;
 
+		// Determinar lenguaje
+		const language = this.getLanguageFromFilename(name);
+
 		// Crear modelo vacío
 		const uri = monaco.Uri.parse(`file:///${name}`);
-		const model = monaco.editor.createModel("", "typescript", uri);
+		const model = monaco.editor.createModel("", language, uri);
 
 		// Guardar referencia
 		this.models[id] = {
 			model,
 			name,
-			language: "javascript",
+			language,
 			hasUnsavedChanges: false
 		};
 
@@ -136,6 +155,13 @@ export default class EditorManager {
 
 		// Activar esta pestaña
 		this.switchToTab(id);
+
+		// Notificar a SchemasManager si es JSON
+		if (language === "json" && window.minecraftSchemasManager) {
+			setTimeout(() => {
+				window.minecraftSchemasManager.onModelCreated(model);
+			}, 100);
+		}
 
 		this.nextTabId++;
 
@@ -278,17 +304,27 @@ export default class EditorManager {
 		document
 			.getElementById("crear-con-nombre")
 			.addEventListener("click", () => {
-				const filename =
-					document.getElementById("filename-input").value;
-				const regex = /(\.js)$/;
-				if (regex.test(filename)) {
-					this.createNewTab(filename);
+				const filename = document
+					.getElementById("filename-input")
+					.value.trim();
 
-					document.getElementById("fileName-form").style.display =
-						"none";
-				} else if (!regex.test(filename)) {
-					return console.log("El nombre tiene un formato inválido");
+				if (!filename) {
+					alert("Por favor ingresa un nombre de archivo");
+					return;
 				}
+
+				// Validar extensión permitida
+				const validExtensions = /\.(js|json|ts|html|css|md|txt)$/i;
+				if (!validExtensions.test(filename)) {
+					alert(
+						"Extensión no válida. Usa: .js, .json, .ts, .html, .css, .md, .txt"
+					);
+					return;
+				}
+
+				this.createNewTab(filename);
+				document.getElementById("fileName-form").style.display = "none";
+				document.getElementById("filename-input").value = "";
 			});
 	}
 

@@ -1,5 +1,5 @@
 // service-worker.js - Service Worker para PWA con caché offline
-const CACHE_NAME = "mcbeditor-v2.0.6";
+const CACHE_NAME = "mcbeditor-v2.0.6.5";
 const RUNTIME_CACHE = "mcbeditor-runtime-v1";
 const TYPES_CACHE = "mcbeditor-types-v1";
 
@@ -31,7 +31,8 @@ const OPTIONAL_ASSETS = [
 // Patrones de URLs que se deben cachear dinámicamente
 const CACHEABLE_PATTERNS = [
 	/^https:\/\/cdn\.jsdelivr\.net\/npm\/@minecraft\/.+\/index\.d\.ts$/,
-	/^https:\/\/registry\.npmjs\.org\/@minecraft\//
+	/^https:\/\/registry\.npmjs\.org\/@minecraft\//,
+	/^https:\/\/raw\.githubusercontent\.com\/Mojang\/bedrock-samples\/main\/metadata\/json_schemas\/.+\.json$/
 ];
 
 // Instalación del Service Worker

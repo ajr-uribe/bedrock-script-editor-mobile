@@ -51,6 +51,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 	await waitForMonaco();
 
+	console.log("[Main] Monaco Editor is ready");
+
 	// Inicializar el gestor de tipos TypeScript
 	window.minecraftTypesManager = new TypesManager();
 
@@ -95,6 +97,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 			await window.minecraftTypesManager.loadTypeScriptDefinitions();
 		}
 	}, 1500);
+
+	// Log de estado después de todo inicializado
+	setTimeout(() => {
+		console.log("[Main] Initialization complete");
+		console.log("[Main] Editor Manager:", !!window.editorManager);
+		console.log("[Main] Types Manager:", !!window.minecraftTypesManager);
+		console.log("[Main] Static Debugger:", !!window.staticDebugger);
+	}, 3000);
 });
 
 // Hacer clases disponibles globalmente

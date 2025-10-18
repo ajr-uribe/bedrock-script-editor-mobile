@@ -74,7 +74,7 @@ class StatusBarManager {
 		saveButton.style.cssText = `
             position: fixed;
             top: 10px;
-            left: 10px;
+            right: 10px;
             width: 40px;
             height: 40px;
             background: #007ACC;

@@ -1,28 +1,53 @@
 {
   "name": "MCBEditor v2",
-  "short_name": "MCBEditor",
+  "short_name": "MCBEditor v2",
   "description": "Editor de código para Minecraft Bedrock con soporte TypeScript y debugging estático",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0f0f1a",
   "theme_color": "#007ACC",
   "orientation": "any",
-  "icons": [
+  "icons": [{
+    "src": "/assets/img/logo.png",
+    "sizes": "72x72",
+    "type": "image/png",
+    "purpose": "any maskable"
+  },
     {
-      "src": "/assets/img/logo.png",
-      "sizes": "72x72",
+      "src": "/assets/img/web-app-manifest-192x192.png",
+      "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
-    }
-  ],
-  "categories": ["development", "productivity", "utilities"],
-  "shortcuts": [
+      "purpose": "maskable"
+    },
     {
-      "name": "Nuevo Archivo",
-      "short_name": "Nuevo",
-      "description": "Crear un nuevo archivo JavaScript",
-      "url": "/?action=new",
-      "icons": [{ "src": "/assets/img/logo.png", "sizes": "96x96" }]
-    }
-  ]
+      "src": "/assets/img/web-app-manifest-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }],
+  "categories": ["development",
+    "productivity",
+    "utilities"],
+  "shortcuts": [{
+    "name": "Nuevo Archivo",
+    "short_name": "Nuevo",
+    "description": "Crear un nuevo archivo JavaScript",
+    "url": "/?action=new",
+    "icons": [{
+      "src": "/assets/img/logo.png",
+      "sizes": "96x96"
+    },
+      {
+        "src": "/assets/img/web-app-manifest-192x192.png",
+        "sizes": "192x192",
+        "type": "image/png",
+        "purpose": "maskable"
+      },
+      {
+        "src": "/assets/img/web-app-manifest-512x512.png",
+        "sizes": "512x512",
+        "type": "image/png",
+        "purpose": "maskable"
+      }]
+  }]
 }
