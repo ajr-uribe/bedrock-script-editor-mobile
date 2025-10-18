@@ -2,21 +2,18 @@
 <html lang="es">
 	<head>
 		<meta charset="UTF-8" />
-
-		<!-- JSON-LD para WebApplication -->
 		<script type="application/ld+json">
 			{
 				"@context": "https://schema.org",
 				"@type": "WebApplication",
-				"name": "MCBE Editor",
+				"name": "MCBE Script Editor",
 				"url": "https://mcbeditor.vercel.app/",
 				"description": "Editor de scripts para add-ons de Minecraft Bedrock con autocompletado de la API. Herramienta PWA para desarrolladores de mods y complementos.",
 				"applicationCategory": "DeveloperApplication",
 				"operatingSystem": "Web",
 				"creator": {
-					"@type": "Person",
-					"name": "a.j.r._.uribe",
-					"url": "https://github.com/ajr-uribe"
+					"@type": "Owner",
+					"name": "a.j.r._.uribe"
 				},
 				"keywords": [
 					"Minecraft Bedrock",
@@ -24,75 +21,72 @@
 					"API autocompletado",
 					"add-ons",
 					"desarrollo mods",
-					"bedrock-script-editor-mobile",
-					"MCBE Editor",
-					"mobile script editor",
-					"PWA"
+					"add-ons",
+					"bedrock",
+					"scripts",
+					"MCBEDITOR",
+					"vercel",
+					"bridgev2",
+					"bridge",
+					"bridge v2",
+					"bedrock bedrock-script-editor-mobile",
+					"Bedrock add-ons",
+					"bedrock wiki",
+					"bedrock tools"
 				],
 				"softwareHelp": {
 					"@type": "CreativeWork",
-					"name": "Documentación del editor",
-					"url": "https://github.com/ajr-uribe/bedrock-script-editor-mobile"
+					"name": "Documentación del editor (opcional)",
+					"url": "https://scriptlabsmc.vercel.app/"
 				}
 			}
 		</script>
-
-		<!-- SEO y Open Graph -->
-		<title>MCBE Editor v1.4</title>
 		<meta
-			name="description"
-			content="Editor avanzado para scripts de Minecraft Bedrock con autocompletado y carga de tipos dinámica. PWA para móvil y escritorio." />
-		<meta
-			name="keywords"
-			content="Minecraft Bedrock, editor scripts, add-ons, MCBE Editor, PWA, mobile, bedrock-script-editor-mobile" />
-		<meta
-			name="viewport"
-			content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
-
-		<!-- Open Graph -->
+			property="twitter:image"
+			content="https://raw.githubusercontent.com/ajr-uribe/bedrock-script-editor-mobile/refs/heads/editor-v1.4/icons/icon-192.webp" />
 		<meta
 			property="og:title"
-			content="MCBE Editor v1.4" />
-		<meta
-			property="og:description"
-			content="Editor avanzado para scripts de Minecraft Bedrock con autocompletado y carga de tipos dinámica. PWA para móvil y escritorio." />
-		<meta
-			property="og:url"
-			content="https://mcbeditor.vercel.app/" />
+			content="MCBEDITOR v1.4" />
 		<meta
 			property="og:site_name"
-			content="MCBE Editor" />
+			content="MCBEDITOR v1.4" />
+		<meta
+			property="og:description"
+			content="Editor avanzado para scripts de Minecraft Bedrock con autocompletado y carga de tipos dinámica. Recibe actualizaciones constantemente y sigue en desarrollo por: a.j.r._.uribe" />
+		<meta
+			property="twitter:description"
+			content="Editor avanzado para scripts de Minecraft Bedrock con autocompletado y carga de tipos dinámica. Recibe actualizaciones constantemente y sigue en desarrollo por: a.j.r._.uribe" />
+		<meta
+			property="description"
+			content="Editor avanzado para scripts de Minecraft Bedrock con autocompletado y carga de tipos dinámica. Recibe actualizaciones constantemente y sigue en desarrollo por: a.j.r._.uribe" />
+		<meta
+			name="description"
+			content="Editor avanzado para scripts de Minecraft Bedrock con autocompletado y carga de tipos dinámica. Recibe actualizaciones constantemente y sigue en desarrollo por: a.j.r._.uribe" />
+		<meta
+			property="og:image"
+			content="https://raw.githubusercontent.com/ajr-uribe/bedrock-script-editor-mobile/refs/heads/editor-v1.4/icons/icon-192.webp" />
+		<meta
+			property="twitter:title"
+			content="MCBEDITOR" />
+		<meta
+			property="og:url"
+			content="https://mcbeditor.vercel.app" />
 		<meta
 			property="og:type"
 			content="website" />
 		<meta
-			property="og:image"
-			content="https://raw.githubusercontent.com/ajr-uribe/bedrock-script-editor-mobile/refs/heads/editor-v1.4/icons/icon-192.webp" />
-
-		<!-- Twitter Card -->
-		<meta
-			name="twitter:card"
-			content="summary_large_image" />
-		<meta
-			name="twitter:title"
-			content="MCBE Editor v1.4" />
-		<meta
-			name="twitter:description"
-			content="Editor avanzado para scripts de Minecraft Bedrock con autocompletado y carga de tipos dinámica. PWA para móvil y escritorio." />
-		<meta
-			name="twitter:image"
-			content="https://raw.githubusercontent.com/ajr-uribe/bedrock-script-editor-mobile/refs/heads/editor-v1.4/icons/icon-192.webp" />
-		<meta
-			name="twitter:site"
-			content="@ajr_uribe" />
-
-		<!-- Manifest y favicon -->
+			name="viewport"
+			content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
 		<link
 			rel="manifest"
 			href="/manifest.json" />
 		<link
 			rel="icon"
 			href="./icons/favicon.png" />
+		<!-- Versión SVG Fontawesome  -->
+		<script
+			defer
+			src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
 		<meta
 			name="theme-color"
 			content="#2b2f34" />
@@ -105,13 +99,7 @@
 		<meta
 			name="apple-mobile-web-app-status-bar-style"
 			content="black-translucent" />
-
-		<!-- FontAwesome -->
-		<script
-			defer
-			src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
-
-		<!-- CSS -->
+		<title>MCBEDITOR v1.4</title>
 		<link
 			rel="stylesheet"
 			href="styles.css" />
@@ -165,37 +153,30 @@
 						value="main"
 						aria-label="Nombre del archivo"
 						maxlength="50" />
+
 					<button
 						id="copy-btn"
 						aria-label="Copiar código">
 						<i class="far fa-copy"></i> Copiar
 					</button>
+
 					<button
 						id="download-btn"
 						aria-label="Descargar código">
-						<strong><i class="fas fa-download"></i> Descargar</strong>
+						<i class="fas fa-download"></i> Descargar
 					</button>
+
+					<button
+						id="install-btn"
+						aria-label="Instalar aplicación"
+						style="display: none">
+						<i class="fas fa-download"></i> Instalar App
+					</button>
+
 					<button
 						id="reset-btn"
 						aria-label="Resetear editor">
-						<strong><i class="fas fa-trash-alt"></i> Reiniciar</strong>
-					</button>
-					<button
-						id="format-btn"
-						aria-label="Formatear Código">
-						<i class="fas fa-code"></i> Formatear Código
-					</button>
-					<button
-						id="update-btn"
-						class="btn btn-warning"
-						style="display: none">
-						<i class="fas fa-sync-alt"></i> Actualizar App
-					</button>
-					<button
-						id="settings-btn"
-						class="settings-toggle-btn"
-						aria-label="Mostrar configuración">
-						<i class="fas fa-cog"></i> Configuración
+						<i class="fas fa-trash-alt"></i> Reiniciar
 					</button>
 				</div>
 			</header>
@@ -222,228 +203,20 @@
 			</div>
 		</main>
 
-		<!-- Modal de configuración -->
-		<div
-			id="settings-backdrop"
-			class="hidden">
-			<section id="settings-form">
-				<button
-					id="close-settings-btn"
-					aria-label="Cerrar configuración"
-					class="close-modal-btn">
-					<i class="fas fa-times"></i>
-				</button>
-				<h2>Configuración del Editor</h2>
-				<form id="editor-settings-form">
-					<!-- Módulos y Tipos -->
-					<fieldset class="settings-group">
-						<legend>
-							<i class="fas fa-cubes"></i> Módulos Minecraft
-						</legend>
-						<div class="setting-row">
-							<label for="module-select">Módulo:</label>
-							<select
-								id="module-select"
-								aria-label="Seleccionar módulo">
-								<option value="server">
-									@minecraft/server
-								</option>
-								<option value="server-ui">
-									@minecraft/server-ui
-								</option>
-								<option value="server-gametest">
-									@minecraft/server-gametest
-								</option>
-								<option value="all">Todos los módulos</option>
-							</select>
-						</div>
-						<div class="setting-row">
-							<label for="version-input">Versión:</label>
-							<input
-								id="version-input"
-								type="text"
-								placeholder="ej. 1.0.0 | 1.1.0-beta.1.20.10-stable"
-								value="1.0.0"
-								aria-label="Versión del módulo"
-								pattern="\d+\.\d+\.\d+"
-								title="Formato X.X.X o versión beta" />
-						</div>
-						<button
-							id="load-types-btn"
-							class="modal-btn"
-							type="button">
-							<i class="fas fa-code"></i> Cargar Tipos
-						</button>
-					</fieldset>
-
-					<!-- Apariencia -->
-					<fieldset class="settings-group">
-						<legend>
-							<i class="fas fa-paint-brush"></i> Apariencia
-						</legend>
-						<div class="setting-row">
-							<label for="theme-select">Tema:</label>
-							<select id="theme-select">
-								<option value="vs-dark">
-									Oscuro (vs-dark)
-								</option>
-								<option value="vs-light">
-									Claro (vs-light)
-								</option>
-								<option value="hc-black">
-									Alto contraste (hc-black)
-								</option>
-							</select>
-						</div>
-						<div class="setting-row">
-							<label for="font-family-select">Fuente:</label>
-							<select id="font-family-select">
-								<option
-									value="Consolas, 'Courier New', monospace">
-									Consolas
-								</option>
-								<option value="'Fira Code', monospace">
-									Fira Code
-								</option>
-								<option value="'Source Code Pro', monospace">
-									Source Code Pro
-								</option>
-							</select>
-						</div>
-						<div class="setting-row">
-							<label for="font-size-input"
-								>Tamaño de fuente:</label
-							>
-							<input
-								id="font-size-input"
-								type="number"
-								min="8"
-								max="24"
-								step="1"
-								value="14" />
-						</div>
-					</fieldset>
-
-					<!-- Comportamiento -->
-					<fieldset class="settings-group">
-						<legend>
-							<i class="fas fa-sliders-h"></i> Comportamiento
-						</legend>
-						<div class="setting-row">
-							<label for="word-wrap-toggle"
-								>Ajuste de línea:</label
-							>
-							<input
-								type="checkbox"
-								id="word-wrap-toggle"
-								checked />
-						</div>
-						<div class="setting-row">
-							<label for="line-numbers-toggle"
-								>Números de línea:</label
-							>
-							<input
-								type="checkbox"
-								id="line-numbers-toggle"
-								checked />
-						</div>
-						<div class="setting-row">
-							<label for="minimap-toggle">Minimapa:</label>
-							<input
-								type="checkbox"
-								id="minimap-toggle"
-								checked />
-						</div>
-						<div class="setting-row">
-							<label for="folding-toggle"
-								>Plegado de código:</label
-							>
-							<input
-								type="checkbox"
-								id="folding-toggle"
-								checked />
-						</div>
-					</fieldset>
-
-					<!-- Avanzado -->
-					<fieldset class="settings-group">
-						<legend><i class="fas fa-cog"></i> Avanzado</legend>
-						<div class="setting-row">
-							<label for="render-whitespace"
-								>Mostrar espacios:</label
-							>
-							<select id="render-whitespace">
-								<option value="none">Nunca</option>
-								<option value="boundary">Solo límites</option>
-								<option value="selection">En selección</option>
-								<option value="all">Siempre</option>
-							</select>
-						</div>
-
-						<div class="setting-row">
-							<label for="tab-size">Tamaño de tabulación:</label>
-							<select id="tab-size">
-								<option value="2">2 espacios</option>
-								<option value="4">4 espacios</option>
-								<option value="8">8 espacios</option>
-							</select>
-						</div>
-					</fieldset>
-				</form>
-
-				<!-- Botones de Acción -->
-				<div class="settings-actions">
-					<button
-						id="set-config"
-						class="apply-btn modal-btn"
-						type="button">
-						<i class="fas fa-check"></i> Aplicar Cambios
-					</button>
-					<button
-						id="reset-settings-btn"
-						class="danger-btn modal-btn"
-						type="button">
-						<i class="fas fa-undo-alt"></i> Restablecer
-						Predeterminados
-					</button>
-				</div>
-
-				<!-- PWA Install Button -->
-				<button
-					id="install-btn"
-					class="modal-btn pwa-btn"
-					aria-label="Instalar aplicación"
-					style="display: none">
-					<i class="fas fa-download"></i> Instalar App
-				</button>
-
-				<!-- Footer con enlaces -->
-				<footer class="settings-footer">
-					<a
-						href="https://discord.gg/BFG3T8MBWN"
-						target="_blank"
-						aria-label="ScriptLabs Discord">
-						<i class="fab fa-discord"></i> ScriptLabs
-					</a>
-					<a
-						href="https://discord.gg/cxGHWhNPKU"
-						target="_blank"
-						aria-label="Soporte Discord">
-						<i class="fas fa-life-ring"></i> Soporte
-					</a>
-				</footer>
-			</section>
-		</div>
-
-		<!-- Toast -->
 		<div
 			class="toast"
 			id="toast"
 			role="alert"
 			aria-live="assertive"></div>
-
-		<!-- Monaco Editor -->
-		<script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js"></script>
+		<script>
+			// Configuración global accesible
+			window.monacoConfig = {
+				loaderUrl:
+					"https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js",
+				baseUrl:
+					"https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs"
+			};
+		</script>
 		<script
 			src="/js/main.js"
 			type="module"
