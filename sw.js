@@ -1,5 +1,5 @@
 // service-worker.js - Service Worker para PWA con caché offline
-const CACHE_NAME = "mcbeditor-v2.0.6.6";
+const CACHE_NAME = "mcbeditor-v2.0.6.7";
 const RUNTIME_CACHE = "mcbeditor-runtime-v1";
 const TYPES_CACHE = "mcbeditor-types-v1";
 

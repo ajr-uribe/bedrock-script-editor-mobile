@@ -4,8 +4,8 @@
   "description": "Editor de código para Minecraft Bedrock con soporte TypeScript y debugging estático",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0f0f1a",
-  "theme_color": "#007ACC",
+  "background_color": "#000000",
+  "theme_color": "#000000",
   "orientation": "any",
   "icons": [{
     "src": "/assets/img/logo.png",
